@@ -81,6 +81,7 @@ jobs:
 
           cd /opt/learn-ifix/app
           npm ci
+          rm -rf .next
           npm run build
           mkdir -p .next/standalone/.next .next/standalone/public
           cp -R .next/static .next/standalone/.next/
