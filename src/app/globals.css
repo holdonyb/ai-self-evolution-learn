@@ -30,7 +30,7 @@
 
 html {
   scroll-behavior: smooth;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 body {
@@ -40,7 +40,7 @@ body {
     linear-gradient(180deg, var(--background) 0%, var(--background-strong) 100%);
   color: var(--foreground);
   font-family: var(--font-body), sans-serif;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 a {
@@ -1623,9 +1623,13 @@ a {
 
 .topic-assistant-rail {
   position: sticky;
-  top: 1rem;
+  top: 1.25rem;
+  align-self: start;
   display: grid;
   gap: 0.8rem;
+  max-height: calc(100dvh - 2.5rem);
+  overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 .topic-assistant-rail-intro {
@@ -1978,7 +1982,6 @@ a {
   .topic-map-heading,
   .topic-path-layout,
   .topic-hero-grid,
-  .topic-reading-layout,
   .topic-module-heading,
   .topic-article,
   .thesis-list,
@@ -1991,11 +1994,6 @@ a {
   .topic-card-grid,
   .topic-nav-grid {
     grid-template-columns: 1fr;
-  }
-
-  .topic-assistant-rail {
-    position: static;
-    order: -1;
   }
 
   .topic-assistant-inline-note {
@@ -2018,6 +2016,24 @@ a {
   .research-atlas-core,
   .research-atlas-node {
     max-width: min(28ch, calc(50% - 1rem));
+  }
+}
+
+@media (max-width: 980px) {
+  .topic-reading-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .topic-assistant-rail {
+    display: none;
+  }
+
+  .topic-assistant-mobile-bar {
+    display: flex;
+  }
+
+  .topic-assistant-mobile-overlay {
+    display: block;
   }
 }
 
