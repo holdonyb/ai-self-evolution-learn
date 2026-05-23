@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import Link from "next/link";
 
 import { AgentPanel } from "@/components/agent-panel";
 import { glossary, readingModules } from "@/content/reading-list";
@@ -80,40 +81,24 @@ export function LearningHome() {
 
       <section className="section">
         <div className="section-heading">
-          <p className="eyebrow">学习路径</p>
-          <h2>六个模块看懂 AI 如何一步步学会改进自己</h2>
+          <p className="eyebrow">主页导航</p>
+          <h2>从首页进入每个主题页，不把所有内容都堆在一屏里</h2>
         </div>
-        <div className="module-list">
+        <div className="topic-card-grid">
           {readingModules.map((module, index) => (
-            <article className="module-row" key={module.id}>
-              <div className="module-index">0{index + 1}</div>
-              <div className="module-main">
-                <h3>{module.title}</h3>
-                <p className="module-question">{module.guidingQuestion}</p>
-                <p className="module-synthesis">{module.synthesis}</p>
-                <ul className="takeaway-list">
-                  {module.takeaways.map((takeaway) => (
-                    <li key={takeaway}>{takeaway}</li>
-                  ))}
-                </ul>
+            <Link className="topic-card" key={module.id} href={`/topic/${module.id}`}>
+              <div className="topic-card-head">
+                <span className="module-index">0{index + 1}</span>
+                <p>/{module.id}</p>
               </div>
-              <div className="module-sources">
-                <p>推荐阅读</p>
-                <ul>
-                  {module.articles.map((article) => (
-                    <li key={article.title}>
-                      <a href={article.url} target="_blank" rel="noreferrer">
-                        {article.isPrimer ? "★ " : ""}
-                        {article.title}
-                      </a>
-                      <span>
-                        {article.source} · {article.published}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+              <h3>{module.title}</h3>
+              <p className="module-question">{module.guidingQuestion}</p>
+              <p className="module-synthesis">{module.synthesis}</p>
+              <div className="topic-card-footer">
+                <span>{module.articles.length} 篇文章</span>
+                <strong>进入主题</strong>
               </div>
-            </article>
+            </Link>
           ))}
         </div>
       </section>

@@ -7,6 +7,7 @@ export default defineConfig({
   test: {
     environment: "happy-dom",
     globals: true,
+    pool: "threads",
     setupFiles: ["./src/test/setup.ts"],
   },
   resolve: {

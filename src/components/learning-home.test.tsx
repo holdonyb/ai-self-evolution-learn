@@ -8,10 +8,11 @@ describe("LearningHome", () => {
     render(<LearningHome />);
 
     expect(screen.getByText("AI 自进化学习站")).toBeInTheDocument();
-    expect(screen.getByText("六个模块看懂 AI 如何一步步学会改进自己")).toBeInTheDocument();
+    expect(screen.getByText("从首页进入每个主题页，不把所有内容都堆在一屏里")).toBeInTheDocument();
     expect(screen.getAllByText("概念与思想起源").length).toBeGreaterThan(0);
     expect(screen.getAllByText("另一种声音：冷静与质疑").length).toBeGreaterThan(0);
     expect(screen.getByText("站内 AI 助教")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("例如：AlphaZero、AlphaEvolve、Nested Learning 三者是什么关系？")).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: /进入主题/ }).length).toBeGreaterThan(0);
   });
 });

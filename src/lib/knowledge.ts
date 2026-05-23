@@ -1,4 +1,5 @@
 import { glossary, readingModules } from "@/content/reading-list";
+import type { ReadingModule } from "@/content/reading-list";
 
 type SearchHit = {
   moduleId: string;
@@ -32,6 +33,30 @@ export function getKnowledgeStats() {
     moduleCount: readingModules.length,
     articleCount,
     starredCount,
+  };
+}
+
+export function getTopicIds() {
+  return readingModules.map((module) => module.id);
+}
+
+export function getModuleById(topicId: string) {
+  return readingModules.find((module) => module.id === topicId);
+}
+
+export function getAdjacentModules(topicId: string): {
+  previous?: ReadingModule;
+  next?: ReadingModule;
+} {
+  const index = readingModules.findIndex((module) => module.id === topicId);
+
+  if (index === -1) {
+    return {};
+  }
+
+  return {
+    previous: index > 0 ? readingModules[index - 1] : undefined,
+    next: index < readingModules.length - 1 ? readingModules[index + 1] : undefined,
   };
 }
 

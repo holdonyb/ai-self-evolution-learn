@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildAgentContext,
+  getAdjacentModules,
+  getModuleById,
   getKnowledgeStats,
+  getTopicIds,
   readingModules,
   searchKnowledge,
 } from "@/lib/knowledge";
@@ -26,6 +29,31 @@ describe("readingModules", () => {
     expect(stats.moduleCount).toBe(6);
     expect(stats.articleCount).toBeGreaterThanOrEqual(17);
     expect(stats.starredCount).toBe(6);
+  });
+});
+
+describe("topic routing helpers", () => {
+  it("returns all topic ids for static routes", () => {
+    expect(getTopicIds()).toEqual([
+      "origins",
+      "self-play",
+      "algorithm-discovery",
+      "continual-learning",
+      "industry",
+      "skepticism",
+    ]);
+  });
+
+  it("finds a module by topic id", () => {
+    expect(getModuleById("self-play")?.title).toBe("自我对弈：AI 第一次自己变强");
+    expect(getModuleById("missing-topic")).toBeUndefined();
+  });
+
+  it("builds previous and next navigation for a topic page", () => {
+    const adjacent = getAdjacentModules("continual-learning");
+
+    expect(adjacent.previous?.id).toBe("algorithm-discovery");
+    expect(adjacent.next?.id).toBe("industry");
   });
 });
 
