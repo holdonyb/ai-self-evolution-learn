@@ -18,13 +18,17 @@ describe("resolveModel", () => {
 });
 
 describe("buildAgentMessages", () => {
-  it("creates a system prompt grounded in the reading knowledge base", () => {
-    const messages = buildAgentMessages("为什么 Nested Learning 值得关注？");
+  it("creates a system prompt grounded in the learning topic knowledge base", () => {
+    const messages = buildAgentMessages("为什么 Nested Learning 值得关注？", {
+      topicId: "ai-self-evolution",
+      mode: "socratic",
+    });
 
     expect(messages).toHaveLength(2);
     expect(messages[0]?.role).toBe("system");
-    expect(messages[0]?.content).toContain("AI 自进化学习站内的学习助教");
-    expect(messages[0]?.content).toContain("让模型边用边学");
+    expect(messages[0]?.content).toContain("Learn 站内的学习助教");
+    expect(messages[0]?.content).toContain("当前主题：AI 自进化");
+    expect(messages[0]?.content).toContain("回答模式：socratic");
     expect(messages[1]).toEqual({
       role: "user",
       content: "为什么 Nested Learning 值得关注？",

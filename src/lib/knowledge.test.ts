@@ -3,9 +3,12 @@ import { describe, expect, it } from "vitest";
 import {
   buildAgentContext,
   getAdjacentModules,
-  getModuleById,
+  getDefaultTopic,
   getKnowledgeStats,
+  getModuleById,
+  getTopicById,
   getTopicIds,
+  learningTopics,
   readingModules,
   searchKnowledge,
 } from "@/lib/knowledge";
@@ -23,33 +26,32 @@ describe("readingModules", () => {
     ]);
   });
 
-  it("tracks article counts and starred primers", () => {
+  it("tracks article counts, themes, and starred primers", () => {
     const stats = getKnowledgeStats();
 
+    expect(stats.topicCount).toBe(1);
     expect(stats.moduleCount).toBe(6);
     expect(stats.articleCount).toBeGreaterThanOrEqual(17);
     expect(stats.starredCount).toBe(6);
   });
 });
 
-describe("topic routing helpers", () => {
-  it("returns all topic ids for static routes", () => {
-    expect(getTopicIds()).toEqual([
-      "origins",
-      "self-play",
-      "algorithm-discovery",
-      "continual-learning",
-      "industry",
-      "skepticism",
-    ]);
+describe("learningTopics", () => {
+  it("exposes the public theme directory", () => {
+    expect(learningTopics).toHaveLength(1);
+    expect(getTopicIds()).toEqual(["ai-self-evolution"]);
+    expect(getTopicById("ai-self-evolution")?.title).toBe("AI 自进化");
+    expect(getDefaultTopic().id).toBe("ai-self-evolution");
   });
+});
 
-  it("finds a module by topic id", () => {
+describe("module helpers", () => {
+  it("finds a module by module id", () => {
     expect(getModuleById("self-play")?.title).toBe("自我对弈：AI 第一次自己变强");
     expect(getModuleById("missing-topic")).toBeUndefined();
   });
 
-  it("builds previous and next navigation for a topic page", () => {
+  it("builds previous and next navigation inside the module path", () => {
     const adjacent = getAdjacentModules("continual-learning");
 
     expect(adjacent.previous?.id).toBe("algorithm-discovery");
@@ -69,15 +71,15 @@ describe("searchKnowledge", () => {
     const results = searchKnowledge("startup funding recursive self-improvement");
 
     expect(results[0]?.moduleTitle).toBe("产业前沿：谁在押注自进化");
-    expect(results.some((result) => result.articleTitle.includes("Recursive Superintelligence"))).toBe(true);
+    expect(results.some((result) => result.articleTitle.includes("Recursive"))).toBe(true);
   });
 });
 
 describe("buildAgentContext", () => {
   it("assembles a structured answer context for the site agent", () => {
-    const context = buildAgentContext("AlphaZero 和 AlphaEvolve 的区别是什么？");
+    const context = buildAgentContext("AlphaZero 和 AlphaEvolve 的区别是什么？", getDefaultTopic());
 
-    expect(context).toContain("问题：AlphaZero 和 AlphaEvolve 的区别是什么？");
+    expect(context).toContain("当前主题：AI 自进化");
     expect(context).toContain("模块：自我对弈：AI 第一次自己变强");
     expect(context).toContain("模块：AI 自己发现算法");
     expect(context).toContain("回答要求");

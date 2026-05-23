@@ -1,5 +1,5 @@
-import { glossary, readingModules } from "@/content/reading-list";
-import type { ReadingModule } from "@/content/reading-list";
+import { glossary, learningTopics, readingModules } from "@/content/reading-list";
+import type { LearningTopic, ReadingModule } from "@/content/reading-list";
 
 type SearchHit = {
   moduleId: string;
@@ -22,7 +22,7 @@ const tokenize = (query: string) =>
     .map((term) => term.trim())
     .filter((term) => term.length > 1);
 
-export { readingModules, glossary };
+export { glossary, learningTopics, readingModules };
 
 export function getKnowledgeStats() {
   const articleCount = readingModules.reduce((total, module) => total + module.articles.length, 0);
@@ -32,6 +32,7 @@ export function getKnowledgeStats() {
   );
 
   return {
+    topicCount: learningTopics.length,
     moduleCount: readingModules.length,
     articleCount,
     starredCount,
@@ -39,18 +40,26 @@ export function getKnowledgeStats() {
 }
 
 export function getTopicIds() {
-  return readingModules.map((module) => module.id);
+  return learningTopics.map((topic) => topic.id);
 }
 
-export function getModuleById(topicId: string) {
-  return readingModules.find((module) => module.id === topicId);
+export function getTopicById(topicId: string) {
+  return learningTopics.find((topic) => topic.id === topicId);
 }
 
-export function getAdjacentModules(topicId: string): {
+export function getDefaultTopic(): LearningTopic {
+  return learningTopics[0];
+}
+
+export function getModuleById(moduleId: string) {
+  return readingModules.find((module) => module.id === moduleId);
+}
+
+export function getAdjacentModules(moduleId: string): {
   previous?: ReadingModule;
   next?: ReadingModule;
 } {
-  const index = readingModules.findIndex((module) => module.id === topicId);
+  const index = readingModules.findIndex((module) => module.id === moduleId);
 
   if (index === -1) {
     return {};
@@ -110,7 +119,7 @@ export function searchKnowledge(query: string, limit = 6): SearchHit[] {
     .slice(0, limit);
 }
 
-export function buildAgentContext(query: string) {
+export function buildAgentContext(query: string, topic: LearningTopic = getDefaultTopic()) {
   const hits = searchKnowledge(query, 8);
   const grouped = new Map<
     string,
@@ -142,14 +151,15 @@ export function buildAgentContext(query: string) {
     return `模块：${group.moduleTitle}\n模块摘要：${group.moduleSynthesis}\n相关文章：\n${articles}`;
   });
 
-  const glossaryBlock = glossary
-    .map((item) => `- ${item.term}：${item.definition}`)
-    .join("\n");
+  const glossaryBlock = glossary.map((item) => `- ${item.term}：${item.definition}`).join("\n");
 
   return [
+    `当前主题：${topic.title}`,
+    `主题问题：${topic.themeQuestion}`,
     `问题：${query}`,
-    "你是 AI 自进化学习站内的学习助教，需要只基于下方知识库回答。",
+    "你是 Learn 站内的学习助教，需要只基于下方知识库回答。",
     "优先解释概念差异、机制、适用边界和现实限制，避免空泛口号。",
+    "如果知识库证据不足，要直接说不足，不要把愿景包装成事实。",
     moduleBlocks.join("\n\n"),
     "关键术语：",
     glossaryBlock,

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { TopicPage } from "@/components/topic-page";
-import { getModuleById, getTopicIds } from "@/lib/knowledge";
+import { getTopicById, getTopicIds } from "@/lib/knowledge";
 
 type TopicRouteProps = {
   params: Promise<{
@@ -15,11 +15,11 @@ export function generateStaticParams() {
 
 export default async function TopicRoute({ params }: TopicRouteProps) {
   const { topicId } = await params;
-  const topicModule = getModuleById(topicId);
+  const topic = getTopicById(topicId);
 
-  if (!topicModule) {
+  if (!topic) {
     notFound();
   }
 
-  return <TopicPage module={topicModule} />;
+  return <TopicPage topic={topic} />;
 }

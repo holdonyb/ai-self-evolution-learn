@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 
+import type { AgentMode } from "@/lib/agent";
 import { buildAgentMessages, extractAnswerText, resolveModel } from "@/lib/agent";
+import { searchWeb } from "@/lib/web-search";
 
 type AskRequest = {
   question?: string;
   model?: string;
+  mode?: AgentMode;
+  topicId?: string;
 };
 
 export async function POST(request: Request) {
@@ -22,6 +26,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "ONEAPI_API_KEY is missing" }, { status: 500 });
   }
 
+  const webResults = await searchWeb(question);
+
   const response = await fetch(`${baseUrl.replace(/\/$/, "")}/v1/chat/completions`, {
     method: "POST",
     headers: {
@@ -31,7 +37,11 @@ export async function POST(request: Request) {
     body: JSON.stringify({
       model: resolveModel(body.model),
       temperature: 0.3,
-      messages: buildAgentMessages(question),
+      messages: buildAgentMessages(question, {
+        topicId: body.topicId,
+        mode: body.mode,
+        webResults,
+      }),
     }),
   });
 
@@ -53,5 +63,5 @@ export async function POST(request: Request) {
     );
   }
 
-  return NextResponse.json({ answer });
+  return NextResponse.json({ answer, webResultsCount: webResults.length });
 }

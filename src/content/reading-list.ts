@@ -20,6 +20,18 @@ export type ReadingModule = {
   articles: ReadingArticle[];
 };
 
+export type LearningTopic = {
+  id: string;
+  title: string;
+  deck: string;
+  summary: string;
+  themeQuestion: string;
+  whyThisTheme: string;
+  theses: string[];
+  socraticStarts: string[];
+  modules: ReadingModule[];
+};
+
 export const readingModules: ReadingModule[] = [
   {
     id: "origins",
@@ -443,5 +455,31 @@ export const glossary = [
     term: "开放式进化",
     definition:
       "系统不围绕单一固定目标优化，而是在不断产生的新挑战和新环境中持续扩展能力。它常被创业公司当作通往更强自进化系统的长期路线。",
+  },
+];
+
+export const learningTopics: LearningTopic[] = [
+  {
+    id: "ai-self-evolution",
+    title: "AI 自进化",
+    deck: "主题 01",
+    summary:
+      "把“AI 改进 AI”拆成一条真正能学懂的路径：思想起源、自我对弈、算法发现、持续学习、产业押注，以及反方质疑。",
+    themeQuestion:
+      "如果 AI 不只是辅助人类，而是逐步参与“改进 AI 本身”，这条能力链条现在到底走到了哪一层？",
+    whyThisTheme:
+      "这组材料适合做 Learn 的第一个主题，因为它同时包含概念边界、工程闭环、验证逻辑、产业现实和反方视角，天然适合做成结构化图谱而不是文章堆叠。",
+    theses: [
+      "今天最真实的自进化，不是全面自治，而是局部闭环越来越多。",
+      "验证器决定这条路能走多远，生成器只是闭环的一半。",
+      "最该警惕的不是神话式奇点，而是研发速度和能力扩散的现实加速。",
+    ],
+    socraticStarts: [
+      "如果没有可靠验证器，为什么“AI 改进 AI”很容易沦为空话？",
+      "AlphaZero、AlphaEvolve 和 Nested Learning 分别代表哪一层能力台阶？",
+      "为什么很多人不否认 AI 会变强，却依然质疑“智能爆炸”？",
+      "如果让你给这条路线排序，今天最可信的突破发生在规则世界、算法搜索，还是持续学习？为什么？",
+    ],
+    modules: readingModules,
   },
 ];

@@ -1,17 +1,61 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type { FormEvent } from "react";
-import { ArrowUpRight, BadgeInfo, Sparkles } from "lucide-react";
+import { ArrowUpRight, BadgeInfo, Mic, MicOff, Sparkles, Volume2, VolumeX } from "lucide-react";
 
+import type { AgentMode } from "@/lib/agent";
 import { resolveModel, supportedModels } from "@/lib/agent";
 
-export function AgentPanel() {
+type AgentPanelProps = {
+  topicId?: string;
+  quickPrompts?: string[];
+};
+
+type AgentResponse = {
+  answer?: string;
+  error?: string;
+  detail?: string;
+};
+
+const modeLabels: Array<{ id: AgentMode; label: string }> = [
+  { id: "answer", label: "直接回答" },
+  { id: "socratic", label: "苏格拉底" },
+  { id: "quiz", label: "小测一轮" },
+];
+
+export function AgentPanel({ topicId, quickPrompts = [] }: AgentPanelProps) {
   const [question, setQuestion] = useState("");
   const [model, setModel] = useState<(typeof supportedModels)[number]["id"]>(supportedModels[0].id);
+  const [mode, setMode] = useState<AgentMode>("socratic");
   const [answer, setAnswer] = useState("");
   const [error, setError] = useState("");
+  const [voiceError, setVoiceError] = useState("");
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [isRecording, setIsRecording] = useState(false);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+
+  const modeHint = useMemo(() => {
+    switch (mode) {
+      case "answer":
+        return "适合直接厘清概念差异、机制和边界。";
+      case "quiz":
+        return "适合快速自测，看看自己是不是真的懂了。";
+      default:
+        return "适合被一步步带着想清关系，而不是只收一个结论。";
+    }
+  }, [mode]);
+
+  useEffect(() => {
+    return () => {
+      recorderRef.current?.stream.getTracks().forEach((track) => track.stop());
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -28,10 +72,12 @@ export function AgentPanel() {
         body: JSON.stringify({
           question,
           model,
+          mode,
+          topicId,
         }),
       });
 
-      const payload = (await response.json()) as { answer?: string; error?: string; detail?: string };
+      const payload = (await response.json()) as AgentResponse;
 
       if (!response.ok) {
         setError(payload.detail ?? payload.error ?? "请求失败");
@@ -42,12 +88,117 @@ export function AgentPanel() {
     });
   };
 
+  const uploadVoiceBlob = async (blob: Blob) => {
+    const formData = new FormData();
+    formData.append("audio", new File([blob], "doubao-recording.webm", { type: blob.type || "audio/webm" }));
+
+    const response = await fetch("/api/voice/transcribe", {
+      method: "POST",
+      body: formData,
+    });
+
+    const payload = (await response.json()) as { text?: string; error?: string; detail?: string };
+
+    if (!response.ok) {
+      throw new Error(payload.detail ?? payload.error ?? "语音识别失败");
+    }
+
+    return payload.text ?? "";
+  };
+
+  const stopRecording = async () => {
+    const recorder = recorderRef.current;
+    if (!recorder) {
+      return;
+    }
+
+    await new Promise<void>((resolve) => {
+      recorder.addEventListener(
+        "stop",
+        async () => {
+          try {
+            const blob = new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" });
+            const transcript = await uploadVoiceBlob(blob);
+            setQuestion((current) => [current.trim(), transcript.trim()].filter(Boolean).join("\n"));
+            setVoiceError("");
+          } catch (voiceIssue) {
+            setVoiceError(voiceIssue instanceof Error ? voiceIssue.message : "语音识别失败");
+          } finally {
+            recorder.stream.getTracks().forEach((track) => track.stop());
+            recorderRef.current = null;
+            chunksRef.current = [];
+            setIsRecording(false);
+            resolve();
+          }
+        },
+        { once: true },
+      );
+
+      recorder.stop();
+    });
+  };
+
+  const toggleVoiceInput = async () => {
+    if (isRecording) {
+      await stopRecording();
+      return;
+    }
+
+    if (typeof window === "undefined" || !navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+      setVoiceError("当前浏览器不支持录音");
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      chunksRef.current = [];
+      recorderRef.current = recorder;
+      recorder.addEventListener("dataavailable", (event) => {
+        if (event.data.size > 0) {
+          chunksRef.current.push(event.data);
+        }
+      });
+      recorder.start();
+      setVoiceError("");
+      setIsRecording(true);
+    } catch (recordingIssue) {
+      setVoiceError(recordingIssue instanceof Error ? recordingIssue.message : "无法打开麦克风");
+    }
+  };
+
+  const toggleSpeech = () => {
+    if (typeof window === "undefined" || !window.speechSynthesis) {
+      setVoiceError("当前浏览器不支持 TTS");
+      return;
+    }
+
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      return;
+    }
+
+    if (!answer.trim()) {
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(answer);
+    utterance.lang = "zh-CN";
+    utterance.rate = 1;
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+    setIsSpeaking(true);
+  };
+
   return (
     <section className="panel-shell" id="assistant">
       <div className="panel-header">
         <div>
           <p className="eyebrow">站内 AI 助教</p>
-          <h3>把阅读清单压成一个可追问的研究伴读</h3>
+          <h3>不是只回答，而是带着你继续学下去</h3>
           <div className="panel-meta">
             <span>
               <Sparkles size={15} />
@@ -55,7 +206,7 @@ export function AgentPanel() {
             </span>
             <span>
               <BadgeInfo size={15} />
-              主动标注争议和限制
+              仅限知识库检索与受限联网补充
             </span>
           </div>
         </div>
@@ -71,6 +222,29 @@ export function AgentPanel() {
         </label>
       </div>
 
+      <div className="agent-mode-row" role="tablist" aria-label="学习模式">
+        {modeLabels.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            className={item.id === mode ? "agent-mode-button is-active" : "agent-mode-button"}
+            onClick={() => setMode(item.id)}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+
+      {quickPrompts.length > 0 ? (
+        <div className="agent-prompt-strip">
+          {quickPrompts.map((prompt) => (
+            <button key={prompt} type="button" className="agent-prompt-chip" onClick={() => setQuestion(prompt)}>
+              {prompt}
+            </button>
+          ))}
+        </div>
+      ) : null}
+
       <form className="agent-form" onSubmit={handleSubmit}>
         <textarea
           value={question}
@@ -79,20 +253,39 @@ export function AgentPanel() {
           rows={5}
         />
         <div className="agent-actions">
-          <p>适合追问概念差异、技术路线、真实边界、以及 2026 年产业含义。</p>
-          <button type="submit" disabled={isPending || !question.trim()}>
-            {isPending ? "思考中..." : "开始追问"}
-            <ArrowUpRight size={16} />
-          </button>
+          <p>{modeHint}</p>
+          <div className="agent-action-row">
+            <button
+              type="button"
+              className={isRecording ? "voice-button is-recording" : "voice-button"}
+              onClick={toggleVoiceInput}
+            >
+              {isRecording ? <MicOff size={16} /> : <Mic size={16} />}
+              {isRecording ? "停止语音" : "语音输入"}
+            </button>
+            <button type="submit" disabled={isPending || !question.trim()}>
+              {isPending ? "思考中..." : "开始追问"}
+              <ArrowUpRight size={16} />
+            </button>
+          </div>
         </div>
       </form>
 
       <div className="agent-output" aria-live="polite">
+        {voiceError ? <p className="agent-error">{voiceError}</p> : null}
         {error ? <p className="agent-error">{error}</p> : null}
         {answer ? (
-          <p>{answer}</p>
+          <>
+            <div className="agent-output-tools">
+              <button type="button" className="agent-audio-button" onClick={toggleSpeech}>
+                {isSpeaking ? <VolumeX size={16} /> : <Volume2 size={16} />}
+                {isSpeaking ? "停止朗读" : "朗读回答"}
+              </button>
+            </div>
+            <p>{answer}</p>
+          </>
         ) : (
-          <p>默认回答方式是：先给结论，再拆机制，然后指出边界，最后告诉你下一篇该读什么。</p>
+          <p>默认学习方式是：先建立判断，再拆机制，再补边界，然后继续追问。</p>
         )}
       </div>
     </section>

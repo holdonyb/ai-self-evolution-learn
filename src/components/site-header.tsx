@@ -7,7 +7,7 @@ type SiteHeaderProps = {
 
 const navItems = [
   { href: "/", label: "首页", key: "home" as const },
-  { href: "/#topics", label: "六大主题", key: "topics" as const },
+  { href: "/#topics", label: "学习主题", key: "topics" as const },
   { href: "/#framework", label: "对比框架", key: "compare" as const },
   { href: "/#assistant", label: "学习助手", key: "assistant" as const },
 ];
@@ -17,8 +17,8 @@ export function SiteHeader({ active = "home" }: SiteHeaderProps) {
     <header className="site-header-shell">
       <div className="site-header">
         <Link className="site-brand" href="/">
-          <span>AI</span>
-          <strong>自进化学习站</strong>
+          <span>Learn</span>
+          <strong>结构化学习</strong>
         </Link>
 
         <nav className="site-nav" aria-label="主导航">
@@ -40,7 +40,7 @@ export function SiteHeader({ active = "home" }: SiteHeaderProps) {
           </span>
           <span>
             <Layers3 size={16} />
-            六层主题图谱
+            主题图谱
           </span>
           <span>
             <GitCompareArrows size={16} />

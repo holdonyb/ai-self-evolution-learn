@@ -4,8 +4,8 @@ import { ArrowRight, Bot, Compass, LibraryBig, Orbit, ScrollText, Waypoints } fr
 
 import { AgentPanel } from "@/components/agent-panel";
 import { SiteHeader } from "@/components/site-header";
-import { glossary, readingModules } from "@/content/reading-list";
-import { getKnowledgeStats } from "@/lib/knowledge";
+import { glossary } from "@/content/reading-list";
+import { getKnowledgeStats, learningTopics } from "@/lib/knowledge";
 
 const comparisonRows = [
   {
@@ -36,6 +36,7 @@ const comparisonRows = [
 
 export function LearningHome() {
   const stats = getKnowledgeStats();
+  const featuredTopic = learningTopics[0];
 
   return (
     <main className="learn-page">
@@ -44,49 +45,49 @@ export function LearningHome() {
       <section className="hero">
         <div className="hero-grid">
           <div className="hero-copy">
-            <p className="eyebrow">learn.ifix.xin / editorial knowledge system</p>
-            <h1>AI 自进化学习站</h1>
-            <p className="hero-kicker">让知识自我进化，让学习持续发生。</p>
+            <p className="eyebrow">learn.ifix.xin / structured learning themes</p>
+            <h1>结构化自主学习主题站</h1>
+            <p className="hero-kicker">不是把文章排好，而是把一个主题学成结构。</p>
             <p className="hero-summary">
-              把一组分散的文章压缩成一个能顺着读、能横向比、也能直接追问的研究型学习站。
+              Learn 是主题导航站，不把整个站写成某一个主题。你先选主题，再进入它的下级学习页，沿着图谱、模块、文章和 AI 助教，把材料真正学成一个体系。
             </p>
             <div className="hero-stats">
               <div>
+                <span>{stats.topicCount}</span>
+                <p>学习主题</p>
+              </div>
+              <div>
                 <span>{stats.moduleCount}</span>
-                <p>主题模块</p>
+                <p>模块层级</p>
               </div>
               <div>
                 <span>{stats.articleCount}</span>
                 <p>文章节点</p>
               </div>
-              <div>
-                <span>{stats.starredCount}</span>
-                <p>入门首选</p>
-              </div>
             </div>
 
             <div className="hero-actions">
               <Link href="#topics" className="hero-link-primary">
-                进入六大主题
+                选择学习主题
                 <ArrowRight size={17} />
               </Link>
               <Link href="#assistant" className="hero-link-secondary">
-                直接问学习助手
+                先试学习助手
               </Link>
             </div>
 
             <div className="hero-rail">
               <article>
-                <span>输入</span>
-                <p>阅读清单、论文、媒体、实验室线索</p>
+                <span>导航</span>
+                <p>先选主题，而不是一上来掉进文章列表。</p>
               </article>
               <article>
                 <span>理解</span>
-                <p>概念边界、能力台阶、验证器逻辑</p>
+                <p>顺着图谱看清主题、模块、文章与争议边界之间的关系。</p>
               </article>
               <article>
-                <span>迭代</span>
-                <p>顺着 topic 路由，把零散材料变成长期知识</p>
+                <span>追问</span>
+                <p>用苏格拉底式提问把“不懂”继续推到更具体。</p>
               </article>
             </div>
           </div>
@@ -95,33 +96,33 @@ export function LearningHome() {
             <div className="orbit orbit-b" />
             <div className="orbit orbit-c" />
             <div className="map-core">
-              <span>RSI</span>
-              <p>从自我对弈到自改研究飞轮</p>
+              <span>Learn</span>
+              <p>主题站壳层</p>
             </div>
             <div className="map-annotations">
               <article>
-                <strong>输入</strong>
-                <span>信息摄入</span>
+                <strong>主题</strong>
+                <span>先确定学习对象</span>
               </article>
               <article>
-                <strong>理解</strong>
-                <span>意义建构</span>
+                <strong>模块</strong>
+                <span>再看内部结构</span>
+              </article>
+              <article>
+                <strong>文章</strong>
+                <span>最后读证据节点</span>
+              </article>
+              <article>
+                <strong>追问</strong>
+                <span>把模糊处继续问深</span>
               </article>
               <article>
                 <strong>内化</strong>
-                <span>知识融通</span>
-              </article>
-              <article>
-                <strong>输出</strong>
-                <span>表达与应用</span>
-              </article>
-              <article>
-                <strong>迭代</strong>
-                <span>反馈与演化</span>
+                <span>把材料变成判断</span>
               </article>
             </div>
             <ul>
-              {readingModules.map((module, index) => (
+              {featuredTopic.modules.map((module, index) => (
                 <li key={module.id} style={{ "--index": index } as CSSProperties}>
                   {module.title}
                 </li>
@@ -133,15 +134,15 @@ export function LearningHome() {
 
       <section className="section" id="topics">
         <div className="section-heading">
-          <p className="eyebrow">六大主题</p>
-          <h2>首页负责导航和定位，真正的深读发生在每个 topic 页</h2>
+          <p className="eyebrow">主题目录</p>
+          <h2>首页负责导航，真正的深读发生在每个主题的下级页面</h2>
         </div>
         <div className="topic-card-grid">
-          {readingModules.map((module, index) => (
-            <Link className="topic-card" key={module.id} href={`/topic/${module.id}`}>
+          {learningTopics.map((topic, index) => (
+            <Link className="topic-card" key={topic.id} href={`/topic/${topic.id}`}>
               <div className="topic-card-head">
                 <span className="module-index">0{index + 1}</span>
-                <p>/{module.id}</p>
+                <p>/{topic.id}</p>
               </div>
               <div className="topic-card-icon" aria-hidden="true">
                 {index === 0 ? <Compass size={22} /> : null}
@@ -151,13 +152,14 @@ export function LearningHome() {
                 {index === 4 ? <Bot size={22} /> : null}
                 {index === 5 ? <ScrollText size={22} /> : null}
               </div>
-              <h3>{module.title}</h3>
-              <p className="module-question">{module.guidingQuestion}</p>
-              <p className="module-synthesis">{module.synthesis}</p>
+              <p className="eyebrow">{topic.deck}</p>
+              <h3>{topic.title}</h3>
+              <p className="module-question">{topic.themeQuestion}</p>
+              <p className="module-synthesis">{topic.summary}</p>
               <div className="topic-card-footer">
-                <span>{module.articles.length} 篇文章</span>
+                <span>{topic.modules.length} 个模块</span>
                 <strong>
-                  进入主题
+                  进入这个主题
                   <ArrowRight size={16} />
                 </strong>
               </div>
@@ -170,7 +172,7 @@ export function LearningHome() {
         <div>
           <div className="section-heading">
             <p className="eyebrow">一张表看明白</p>
-            <h2>“AI 自进化”不是一件事，而是四层能力台阶</h2>
+            <h2>{featuredTopic.title} 不是一个词，而是一条能力台阶</h2>
           </div>
           <div className="comparison-table">
             <div className="comparison-head">
@@ -189,33 +191,20 @@ export function LearningHome() {
             ))}
           </div>
         </div>
-        <AgentPanel />
+        <AgentPanel topicId={featuredTopic.id} quickPrompts={featuredTopic.socraticStarts.slice(0, 3)} />
       </section>
 
       <section className="section notes-section">
         <div className="section-heading">
-          <p className="eyebrow">关键判断</p>
-          <h2>读完整个清单后，最值得留下的三条判断</h2>
+          <p className="eyebrow">主题判断</p>
+          <h2>如果只记住三条判断，这个主题至少该留下这些</h2>
         </div>
         <div className="thesis-list">
-          <article>
-            <h3>今天最真实的自进化，不是“全面自治”，而是“局部闭环越来越多”。</h3>
-            <p>
-              AlphaZero 在封闭规则里闭环，AlphaEvolve 在算法评测里闭环，Nested Learning 试图在记忆更新里闭环。真正的突破不是一句“AI 会自我改进”，而是闭环范围在不断扩张。
-            </p>
-          </article>
-          <article>
-            <h3>验证器决定了这条路能走多远。</h3>
-            <p>
-              只会生成不算自进化。能不能自动知道“这次变得更好了吗”，才是把输出变成飞轮的关键。越难验证的任务，离真正 RSI 就越远。
-            </p>
-          </article>
-          <article>
-            <h3>最该警惕的不是神话式奇点，而是现实中的研发加速。</h3>
-            <p>
-              怀疑者反对的是无摩擦爆炸，不是能力提升本身。对组织和社会真正有影响的，是 AI 越来越深地进入 AI 研发、测试、安全和基础设施链路。
-            </p>
-          </article>
+          {featuredTopic.theses.map((thesis) => (
+            <article key={thesis}>
+              <h3>{thesis}</h3>
+            </article>
+          ))}
         </div>
       </section>
 
