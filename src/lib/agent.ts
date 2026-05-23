@@ -2,11 +2,6 @@ import { buildAgentContext } from "@/lib/knowledge";
 
 export const supportedModels = [
   {
-    id: "claude-opus-4.7",
-    label: "Claude Opus 4.7",
-    provider: "Anthropic via OneAPI",
-  },
-  {
     id: "gemini-3.1-pro-preview",
     label: "Gemini 3.1 Pro Preview",
     provider: "Google via OneAPI",

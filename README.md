@@ -27,6 +27,10 @@
 - OneAPI-compatible chat endpoint for the study assistant
 - nginx + pm2 deployment on the `openai-api` VM
 
+Current verified production model:
+
+- `gemini-3.1-pro-preview`
+
 ## 本地运行
 
 ```bash

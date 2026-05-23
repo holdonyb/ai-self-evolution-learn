@@ -20,6 +20,7 @@ It turns a scattered article pack into:
 - Learning homepage implemented with structured modules, comparison table, glossary, and AI panel
 - Vitest coverage in place for knowledge search, agent payload assembly, and homepage rendering
 - Standalone deployment target selected for nginx + pm2 on the `openai-api` VM
+- Production-verified assistant model path currently uses `gemini-3.1-pro-preview`
 
 ## Active Work
 

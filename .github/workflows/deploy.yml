@@ -82,7 +82,8 @@ jobs:
           cd /opt/learn-ifix/app
           npm ci
           npm run build
-          pm2 startOrReload deploy/ecosystem.config.cjs --update-env
+          pm2 delete learn-ifix-web || true
+          pm2 start deploy/ecosystem.config.cjs --update-env
           nginx -t
           systemctl reload nginx
           EOF
