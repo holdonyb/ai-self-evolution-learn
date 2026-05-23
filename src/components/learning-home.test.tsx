@@ -8,10 +8,12 @@ describe("LearningHome", () => {
     render(<LearningHome />);
 
     expect(screen.getAllByText("Learn").length).toBeGreaterThan(0);
-    expect(screen.getByRole("heading", { name: "选择主题 开始学习" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "AI 自进化 学习地图" })).toBeInTheDocument();
     expect(screen.getAllByText("AI 自进化").length).toBeGreaterThan(0);
     expect(screen.getByText("站内 AI 助教")).toBeInTheDocument();
     expect(screen.queryByText("主题站壳层")).not.toBeInTheDocument();
+    expect(screen.queryByText(/首页只负责/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/首页只放入口/)).not.toBeInTheDocument();
     expect(screen.queryByText("概念与思想起源")).not.toBeInTheDocument();
     expect(screen.queryByText("自我对弈：AI 第一次自己变强")).not.toBeInTheDocument();
     expect(

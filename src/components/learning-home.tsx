@@ -18,20 +18,20 @@ export function LearningHome() {
           <div className="home-gateway-copy">
             <p className="eyebrow">learn.ifix.xin</p>
             <h1>
-              <span>选择主题</span>
-              <span>开始学习</span>
+              <span>AI 自进化</span>
+              <span>学习地图</span>
             </h1>
             <p className="hero-summary">
-              首页只负责把你带到合适的主题。真正的图谱、文章、追问和深读路径，都放在主题页里完成。
+              从自我对弈到算法发现，把分散材料整理成一条能读、能问、能复盘的学习路径。
             </p>
 
             <div className="hero-actions">
               <Link href={`/topic/${featuredTopic.id}`} className="hero-link-primary">
-                进入 AI 自进化
+                进入学习地图
                 <ArrowRight size={17} />
               </Link>
               <Link href="#assistant" className="hero-link-secondary">
-                问学习助手
+                问 AI 助教
               </Link>
             </div>
           </div>
@@ -52,7 +52,7 @@ export function LearningHome() {
               <span>AI 助教</span>
             </div>
             <strong>
-              打开主题页
+              进入学习
               <ArrowRight size={17} />
             </strong>
           </Link>
@@ -62,7 +62,7 @@ export function LearningHome() {
       <section className="section" id="topics">
         <div className="section-heading">
           <p className="eyebrow">主题目录</p>
-          <h2>首页只放入口，深内容进主题页</h2>
+          <h2>选择一个主题开始</h2>
         </div>
         <div className="topic-card-grid">
           {learningTopics.map((topic, index) => (
@@ -92,23 +92,23 @@ export function LearningHome() {
       <section className="section home-flow-section">
         <div className="section-heading">
           <p className="eyebrow">学习方式</p>
-          <h2>先进入主题，再用问题把知识问深</h2>
+          <h2>一条路径读下来</h2>
         </div>
         <div className="home-flow-grid">
           <article>
             <Network size={22} />
-            <h3>看图谱</h3>
-            <p>先知道这个主题由哪几块组成。</p>
+            <h3>建立问题</h3>
+            <p>先抓住：AI 自进化到底在改进什么。</p>
           </article>
           <article>
             <BookOpenText size={22} />
-            <h3>读证据</h3>
-            <p>再进入论文、官方材料和反方观点。</p>
+            <h3>对照证据</h3>
+            <p>再看论文、产品路线和反方观点。</p>
           </article>
           <article>
             <Bot size={22} />
-            <h3>继续问</h3>
-            <p>用助手把不懂的关系问到具体。</p>
+            <h3>追问内化</h3>
+            <p>最后把模糊概念问成自己的判断。</p>
           </article>
         </div>
       </section>
@@ -116,7 +116,7 @@ export function LearningHome() {
       <section className="section" id="assistant">
         <div className="section-heading">
           <p className="eyebrow">学习助手</p>
-          <h2>可以先问，但更适合读完主题页后追问</h2>
+          <h2>用问题继续往深处走</h2>
         </div>
         <AgentPanel topicId={featuredTopic.id} quickPrompts={featuredTopic.socraticStarts.slice(0, 3)} />
       </section>
