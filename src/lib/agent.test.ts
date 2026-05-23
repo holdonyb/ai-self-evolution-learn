@@ -29,6 +29,8 @@ describe("buildAgentMessages", () => {
     expect(messages[0]?.content).toContain("Learn 站内的学习助教");
     expect(messages[0]?.content).toContain("当前主题：AI 自进化");
     expect(messages[0]?.content).toContain("回答模式：socratic");
+    expect(messages[0]?.content).toContain("不要直接给标准答案");
+    expect(messages[0]?.content).toContain("一次只推进一个小问题");
     expect(messages[1]).toEqual({
       role: "user",
       content: "为什么 Nested Learning 值得关注？",

@@ -44,9 +44,17 @@ export function AgentPanel({ topicId, quickPrompts = [] }: AgentPanelProps) {
       case "quiz":
         return "适合快速自测，看看自己是不是真的懂了。";
       default:
-        return "适合被一步步带着想清关系，而不是只收一个结论。";
+        return "适合你自己不断回答问题，助教只负责把问题一步步压实。";
     }
   }, [mode]);
+
+  const submitLabel = mode === "socratic" ? "开始对话" : "开始追问";
+  const speechLabel = mode === "socratic" ? "朗读问题" : "朗读回答";
+  const stopSpeechLabel = mode === "socratic" ? "停止朗读问题" : "停止朗读";
+  const outputFallback =
+    mode === "socratic"
+      ? "苏格拉底模式不会先替你回答，它会先把你的问题拆成你必须自己作答的小问题。"
+      : "默认学习方式是：先建立判断，再拆机制，再补边界，然后继续追问。";
 
   useEffect(() => {
     return () => {
@@ -263,8 +271,8 @@ export function AgentPanel({ topicId, quickPrompts = [] }: AgentPanelProps) {
               {isRecording ? <MicOff size={16} /> : <Mic size={16} />}
               {isRecording ? "停止语音" : "语音输入"}
             </button>
-            <button type="submit" disabled={isPending || !question.trim()}>
-              {isPending ? "思考中..." : "开始追问"}
+              <button type="submit" disabled={isPending || !question.trim()}>
+              {isPending ? "思考中..." : submitLabel}
               <ArrowUpRight size={16} />
             </button>
           </div>
@@ -279,13 +287,13 @@ export function AgentPanel({ topicId, quickPrompts = [] }: AgentPanelProps) {
             <div className="agent-output-tools">
               <button type="button" className="agent-audio-button" onClick={toggleSpeech}>
                 {isSpeaking ? <VolumeX size={16} /> : <Volume2 size={16} />}
-                {isSpeaking ? "停止朗读" : "朗读回答"}
+                {isSpeaking ? stopSpeechLabel : speechLabel}
               </button>
             </div>
             <p>{answer}</p>
           </>
         ) : (
-          <p>默认学习方式是：先建立判断，再拆机制，再补边界，然后继续追问。</p>
+          <p>{outputFallback}</p>
         )}
       </div>
     </section>
