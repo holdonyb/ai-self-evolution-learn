@@ -21,7 +21,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Test
         run: npm test
@@ -77,10 +77,57 @@ jobs:
           ONEAPI_API_KEY=${{ secrets.ONEAPI_API_KEY }}
           ONEAPI_BASE_URL=${{ secrets.ONEAPI_BASE_URL }}
           NEXT_PUBLIC_SITE_URL=${{ secrets.NEXT_PUBLIC_SITE_URL }}
+          DOUBAO_ASR_APP_KEY=${{ secrets.DOUBAO_ASR_APP_KEY }}
+          DOUBAO_ASR_ACCESS_KEY=${{ secrets.DOUBAO_ASR_ACCESS_KEY }}
+          DOUBAO_ASR_STS_ENDPOINT=${{ secrets.DOUBAO_ASR_STS_ENDPOINT }}
+          DOUBAO_STREAM_ASR_URL=${{ secrets.DOUBAO_STREAM_ASR_URL }}
+          DOUBAO_STREAM_ASR_RESOURCE_ID=${{ secrets.DOUBAO_STREAM_ASR_RESOURCE_ID }}
+          DOUBAO_STREAM_TOKEN_DURATION_SECONDS=${{ secrets.DOUBAO_STREAM_TOKEN_DURATION_SECONDS }}
           ENVEOF
 
+          python3 - <<'PY'
+          from pathlib import Path
+
+          target_path = Path("/opt/learn-ifix/app/.env.production")
+          agenthub_env_path = Path("/opt/agenthub/.env")
+          fallback_mapping = {
+              "DOUBAO_ASR_APP_KEY": "AGENTHUB_DOUBAO_ASR_APP_KEY",
+              "DOUBAO_ASR_ACCESS_KEY": "AGENTHUB_DOUBAO_ASR_ACCESS_KEY",
+              "DOUBAO_ASR_STS_ENDPOINT": "AGENTHUB_DOUBAO_ASR_STS_ENDPOINT",
+              "DOUBAO_STREAM_ASR_URL": "AGENTHUB_DOUBAO_STREAM_ASR_URL",
+              "DOUBAO_STREAM_ASR_RESOURCE_ID": "AGENTHUB_DOUBAO_STREAM_ASR_RESOURCE_ID",
+              "DOUBAO_STREAM_TOKEN_DURATION_SECONDS": "AGENTHUB_DOUBAO_STREAM_TOKEN_DURATION_SECONDS",
+          }
+
+          def read_env_file(path: Path) -> dict[str, str]:
+              if not path.exists():
+                  return {}
+              values: dict[str, str] = {}
+              for raw_line in path.read_text(encoding="utf-8", errors="ignore").splitlines():
+                  line = raw_line.strip()
+                  if not line or line.startswith("#") or "=" not in line:
+                      continue
+                  key, value = line.split("=", 1)
+                  values[key.strip()] = value.strip()
+              return values
+
+          target_env = read_env_file(target_path)
+          agenthub_env = read_env_file(agenthub_env_path)
+          append_lines: list[str] = []
+          for target_key, source_key in fallback_mapping.items():
+              if target_env.get(target_key):
+                  continue
+              source_value = agenthub_env.get(source_key, "").strip()
+              if source_value:
+                  append_lines.append(f"{target_key}={source_value}")
+
+          if append_lines:
+              with target_path.open("a", encoding="utf-8") as handle:
+                  handle.write("\n" + "\n".join(append_lines) + "\n")
+          PY
+
           cd /opt/learn-ifix/app
-          npm ci
+          npm ci --legacy-peer-deps
           rm -rf .next
           npm run build
           mkdir -p .next/standalone/.next .next/standalone/public

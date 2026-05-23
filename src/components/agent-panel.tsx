@@ -6,6 +6,7 @@ import { ArrowUpRight, BadgeInfo, Mic, MicOff, Sparkles, Volume2, VolumeX } from
 
 import type { AgentMode, SupportedModelId } from "@/lib/agent";
 import { resolveModel, supportedModels } from "@/lib/agent";
+import { startStreamingVoice, type StreamingVoiceController, type VoiceStreamAuthPayload } from "@/lib/voice-streaming";
 
 type AgentPanelProps = {
   topicId?: string;
@@ -58,8 +59,11 @@ export function AgentPanel({
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [isRecording, setIsRecording] = useState(false);
-  const recorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
+  const streamingControllerRef = useRef<StreamingVoiceController | null>(null);
+  const streamingBaseQuestionRef = useRef("");
+  const streamingAppliedTextRef = useRef("");
+  const streamingLastTextRef = useRef("");
+  const streamingManualEditRef = useRef(false);
   const activeState = state ?? internalState;
 
   const setAgentState = (nextState: AgentPanelState | ((current: AgentPanelState) => AgentPanelState)) => {
@@ -109,12 +113,50 @@ export function AgentPanel({
 
   useEffect(() => {
     return () => {
-      recorderRef.current?.stream.getTracks().forEach((track) => track.stop());
+      streamingControllerRef.current?.stop();
       if (typeof window !== "undefined" && "speechSynthesis" in window) {
         window.speechSynthesis.cancel();
       }
     };
   }, []);
+
+  const resetStreamingQuestionState = () => {
+    streamingBaseQuestionRef.current = "";
+    streamingAppliedTextRef.current = "";
+    streamingLastTextRef.current = "";
+    streamingManualEditRef.current = false;
+  };
+
+  const applyStreamingQuestionPartial = (text: string) => {
+    const normalized = text.trim();
+    const previous = streamingLastTextRef.current;
+    streamingLastTextRef.current = normalized;
+
+    if (streamingManualEditRef.current) {
+      if (!normalized) {
+        return;
+      }
+
+      const suffix = normalized.startsWith(previous) ? normalized.slice(previous.length) : normalized;
+      if (!suffix) {
+        return;
+      }
+
+      setAgentState((current) => ({
+        ...current,
+        question: `${current.question}${suffix}`,
+      }));
+      return;
+    }
+
+    streamingAppliedTextRef.current = normalized;
+    setAgentState((current) => ({
+      ...current,
+      question: normalized
+        ? `${streamingBaseQuestionRef.current}${normalized}`
+        : streamingBaseQuestionRef.current,
+    }));
+  };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -146,57 +188,74 @@ export function AgentPanel({
     });
   };
 
-  const uploadVoiceBlob = async (blob: Blob) => {
-    const formData = new FormData();
-    formData.append("audio", new File([blob], "doubao-recording.webm", { type: blob.type || "audio/webm" }));
-
-    const response = await fetch("/api/voice/transcribe", {
-      method: "POST",
-      body: formData,
-    });
-
-    const payload = (await response.json()) as { text?: string; error?: string; detail?: string };
-
-    if (!response.ok) {
-      throw new Error(payload.detail ?? payload.error ?? "语音识别失败");
+  const stopRecording = async () => {
+    if (streamingControllerRef.current) {
+      streamingControllerRef.current.stop();
     }
-
-    return payload.text ?? "";
   };
 
-  const stopRecording = async () => {
-    const recorder = recorderRef.current;
-    if (!recorder) {
+  const fetchVoiceStreamAuth = async () => {
+    const response = await fetch("/api/voice/stream-auth", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+    });
+
+    const payload = (await response.json()) as VoiceStreamAuthPayload & { error?: string };
+    if (!response.ok) {
+      throw new Error(payload.error ?? "流式语音鉴权失败");
+    }
+
+    return payload;
+  };
+
+  const finalizeStreamingVoice = (options?: { errorMessage?: string }) => {
+    setIsRecording(false);
+    streamingControllerRef.current = null;
+    resetStreamingQuestionState();
+    patchAgentState({ voiceError: options?.errorMessage ?? "" });
+  };
+
+  const startStreamingVoiceInput = async () => {
+    if (typeof window === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+      patchAgentState({ voiceError: "当前浏览器不支持录音" });
       return;
     }
 
-    await new Promise<void>((resolve) => {
-      recorder.addEventListener(
-        "stop",
-        async () => {
-          try {
-            const blob = new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" });
-            const transcript = await uploadVoiceBlob(blob);
-            setAgentState((current) => ({
-              ...current,
-              question: [current.question.trim(), transcript.trim()].filter(Boolean).join("\n"),
-              voiceError: "",
-            }));
-          } catch (voiceIssue) {
-            patchAgentState({ voiceError: voiceIssue instanceof Error ? voiceIssue.message : "语音识别失败" });
-          } finally {
-            recorder.stream.getTracks().forEach((track) => track.stop());
-            recorderRef.current = null;
-            chunksRef.current = [];
-            setIsRecording(false);
-            resolve();
+    try {
+      const auth = await fetchVoiceStreamAuth();
+      resetStreamingQuestionState();
+      streamingBaseQuestionRef.current = question.trim() ? `${question.trimEnd()}\n` : "";
+      const controller = await startStreamingVoice({
+        auth,
+        onStart: () => {
+          setIsRecording(true);
+          patchAgentState({ voiceError: "" });
+        },
+        onPartialText: (text) => {
+          const normalized = String(text || "").trim();
+          if (normalized) {
+            applyStreamingQuestionPartial(normalized);
           }
         },
-        { once: true },
-      );
-
-      recorder.stop();
-    });
+        onRecovering: (attempt) => {
+          patchAgentState({ voiceError: `语音连接中断，正在第 ${attempt} 次重连…` });
+        },
+        onClose: () => {
+          finalizeStreamingVoice();
+        },
+        onError: () => {
+          finalizeStreamingVoice({ errorMessage: "流式语音连接中断，请重试" });
+        },
+      });
+      streamingControllerRef.current = controller;
+    } catch (recordingIssue) {
+      finalizeStreamingVoice({
+        errorMessage: recordingIssue instanceof Error ? recordingIssue.message : "流式语音启动失败",
+      });
+    }
   };
 
   const toggleVoiceInput = async () => {
@@ -205,27 +264,7 @@ export function AgentPanel({
       return;
     }
 
-    if (typeof window === "undefined" || !navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
-      patchAgentState({ voiceError: "当前浏览器不支持录音" });
-      return;
-    }
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
-      chunksRef.current = [];
-      recorderRef.current = recorder;
-      recorder.addEventListener("dataavailable", (event) => {
-        if (event.data.size > 0) {
-          chunksRef.current.push(event.data);
-        }
-      });
-      recorder.start();
-      patchAgentState({ voiceError: "" });
-      setIsRecording(true);
-    } catch (recordingIssue) {
-      patchAgentState({ voiceError: recordingIssue instanceof Error ? recordingIssue.message : "无法打开麦克风" });
-    }
+    await startStreamingVoiceInput();
   };
 
   const toggleSpeech = () => {
@@ -318,7 +357,27 @@ export function AgentPanel({
       <form className="agent-form" onSubmit={handleSubmit}>
         <textarea
           value={question}
-          onChange={(event) => patchAgentState({ question: event.target.value })}
+          onChange={(event) => {
+            const nextQuestion = event.target.value;
+            if (isRecording && streamingControllerRef.current) {
+              const applied = streamingAppliedTextRef.current;
+              const expected = `${streamingBaseQuestionRef.current}${applied}`;
+              if (!streamingManualEditRef.current && nextQuestion === expected) {
+                patchAgentState({ question: nextQuestion });
+                return;
+              }
+
+              if (!streamingManualEditRef.current && applied && nextQuestion.endsWith(applied)) {
+                streamingBaseQuestionRef.current = nextQuestion.slice(0, nextQuestion.length - applied.length);
+              } else {
+                streamingManualEditRef.current = true;
+                streamingBaseQuestionRef.current = nextQuestion;
+                streamingAppliedTextRef.current = "";
+              }
+            }
+
+            patchAgentState({ question: nextQuestion });
+          }}
           placeholder="例如：AlphaZero、AlphaEvolve、Nested Learning 三者是什么关系？它们分别代表哪一层自进化能力？"
           rows={variant === "rail" ? 4 : 5}
         />
@@ -331,7 +390,7 @@ export function AgentPanel({
               onClick={toggleVoiceInput}
             >
               {isRecording ? <MicOff size={16} /> : <Mic size={16} />}
-              {isRecording ? "停止语音" : "语音输入"}
+              {isRecording ? "停止语音" : "流式语音"}
             </button>
             <button type="submit" disabled={isPending || !question.trim()}>
               {isPending ? "思考中..." : submitLabel}

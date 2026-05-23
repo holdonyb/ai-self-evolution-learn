@@ -48,7 +48,11 @@ Copy `.env.example` into `.env.local` or `.env.production`:
 ONEAPI_API_KEY=replace-me
 ONEAPI_BASE_URL=https://oneapi.keath.ai
 NEXT_PUBLIC_SITE_URL=https://learn.ifix.xin
+DOUBAO_ASR_APP_KEY=
+DOUBAO_ASR_ACCESS_KEY=
 ```
+
+流式语音使用 Doubao streaming token。线上如果没有单独给学习站配置这些变量，部署脚本会尝试从同机 `AgentHub` 的 `.env` 里复用已有的 Doubao streaming 配置。
 
 ## 验证
 
