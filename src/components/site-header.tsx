@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookMarked, Bot, GitCompareArrows, Layers3, Search } from "lucide-react";
+import { BookMarked, Bot, Layers3, Search } from "lucide-react";
 
 type SiteHeaderProps = {
   active?: "home" | "topics" | "compare" | "assistant";
@@ -8,7 +8,6 @@ type SiteHeaderProps = {
 const navItems = [
   { href: "/", label: "首页", key: "home" as const },
   { href: "/#topics", label: "学习主题", key: "topics" as const },
-  { href: "/#framework", label: "对比框架", key: "compare" as const },
   { href: "/#assistant", label: "学习助手", key: "assistant" as const },
 ];
 
@@ -41,10 +40,6 @@ export function SiteHeader({ active = "home" }: SiteHeaderProps) {
           <span>
             <Layers3 size={16} />
             主题图谱
-          </span>
-          <span>
-            <GitCompareArrows size={16} />
-            横向比较
           </span>
           <span>
             <Bot size={16} />
