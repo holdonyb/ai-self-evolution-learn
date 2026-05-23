@@ -17,7 +17,7 @@ It turns a scattered article pack into:
 - Reading list upgraded into a source-tiered knowledge base in `src/content/reading-list.ts`
 - Search and agent context builder implemented in `src/lib/knowledge.ts`
 - OneAPI-backed site assistant route implemented in `src/app/api/ask/route.ts`
-- Learning homepage implemented with structured modules, comparison table, glossary, and AI panel
+- Learning homepage simplified into a learner-facing navigation entry; deep module/article content lives under topic pages
 - Vitest coverage in place for knowledge search, agent payload assembly, and homepage rendering
 - Standalone deployment target selected for nginx + pm2 on the `openai-api` VM
 - Production-verified assistant model path currently uses `gemini-3.1-pro-preview`
@@ -56,3 +56,4 @@ npm run build
 - The site assistant depends on `ONEAPI_API_KEY`; without it the page still renders but `/api/ask` will return a 500 error.
 - The reading summaries are synthesized for learning value; if deeper source annotation is needed, add article-by-article note pages later.
 - Current DNS for `learn.ifix.xin` resolves to the target VM from the server side.
+- nginx now sends `no-store` for HTML/page responses while keeping hashed `/_next/static/` assets cacheable, so homepage copy changes should not remain stale on mobile browsers.
