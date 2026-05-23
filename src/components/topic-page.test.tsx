@@ -25,5 +25,9 @@ describe("TopicPage", () => {
     expect(screen.getAllByText("读这一节")).toHaveLength(topic.modules.length);
     expect(screen.getByAltText("自我对弈与算法发现")).toBeInTheDocument();
     expect(screen.getByAltText("持续学习与产业验证")).toBeInTheDocument();
+    expect(screen.getByLabelText("AI 助教伴读")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /打开助手/ })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /打开助教/ })).toHaveAttribute("href", "#assistant");
+    expect(screen.queryByText("苏格拉底式追问")).not.toBeInTheDocument();
   });
 });

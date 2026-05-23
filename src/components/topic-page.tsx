@@ -2,8 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, BookOpenText, FileStack, Milestone, Tags } from "lucide-react";
 
-import { AgentPanel } from "@/components/agent-panel";
 import { SiteHeader } from "@/components/site-header";
+import { TopicAssistantDock } from "@/components/topic-assistant-dock";
 import type { LearningTopic } from "@/content/reading-list";
 
 type TopicPageProps = {
@@ -126,111 +126,120 @@ export function TopicPage({ topic }: TopicPageProps) {
         </div>
       </section>
 
-      <section className="section">
-        <div className="section-heading">
-          <p className="eyebrow">学习路径</p>
-          <h2>今天这组主题学的不是某一篇文章，而是一整条能力演化路径</h2>
-        </div>
-
-        <figure className="topic-lead-figure">
-          <div className="topic-lead-figure-copy">
-            <p className="eyebrow">持续学习与部署</p>
-            <p>真正困难的地方，不是生成候选，而是让系统在长期记忆、评测和生产反馈里稳定变强。</p>
-          </div>
-          <div className="topic-lead-figure-image">
-            <Image
-              src="/design/hero-research-atlas.png"
-              alt="持续学习与产业验证"
-              className="media-fill"
-              fill
-              unoptimized
-            />
-          </div>
-        </figure>
-
-        <div className="topic-article-list">
-          {topic.modules.map((module, moduleIndex) => (
-            <section className="topic-module-block" key={module.id} id={`module-${module.id}`}>
-              <div className="topic-module-heading">
-                <div className="topic-article-index">0{moduleIndex + 1}</div>
-                <div>
-                  <p className="eyebrow">模块 / {module.id}</p>
-                  <h3>{module.title}</h3>
-                  <p>{module.guidingQuestion}</p>
-                  <p>{module.synthesis}</p>
-                </div>
+      <div className="section topic-reading-shell">
+        <div className="topic-reading-layout">
+          <div className="topic-reading-main">
+            <section className="topic-reading-section">
+              <div className="section-heading">
+                <p className="eyebrow">学习路径</p>
+                <h2>今天这组主题学的不是某一篇文章，而是一整条能力演化路径</h2>
               </div>
 
-              <ul className="topic-takeaways">
-                {module.takeaways.map((takeaway) => (
-                  <li key={takeaway}>{takeaway}</li>
+              <div className="topic-assistant-inline-note">
+                <p className="eyebrow">边读边问</p>
+                <p>读到卡住的地方，不必滑到页尾，右侧助教会一直跟着当前主题。</p>
+                <a href="#assistant">
+                  打开助教
+                  <ArrowRight size={15} />
+                </a>
+              </div>
+
+              <figure className="topic-lead-figure">
+                <div className="topic-lead-figure-copy">
+                  <p className="eyebrow">持续学习与部署</p>
+                  <p>真正困难的地方，不是生成候选，而是让系统在长期记忆、评测和生产反馈里稳定变强。</p>
+                </div>
+                <div className="topic-lead-figure-image">
+                  <Image
+                    src="/design/hero-research-atlas.png"
+                    alt="持续学习与产业验证"
+                    className="media-fill"
+                    fill
+                    unoptimized
+                  />
+                </div>
+              </figure>
+
+              <div className="topic-article-list">
+                {topic.modules.map((module, moduleIndex) => (
+                  <section className="topic-module-block" key={module.id} id={`module-${module.id}`}>
+                    <div className="topic-module-heading">
+                      <div className="topic-article-index">0{moduleIndex + 1}</div>
+                      <div>
+                        <p className="eyebrow">模块 / {module.id}</p>
+                        <h3>{module.title}</h3>
+                        <p>{module.guidingQuestion}</p>
+                        <p>{module.synthesis}</p>
+                      </div>
+                    </div>
+
+                    <ul className="topic-takeaways">
+                      {module.takeaways.map((takeaway) => (
+                        <li key={takeaway}>{takeaway}</li>
+                      ))}
+                    </ul>
+
+                    {module.articles.map((article, index) => (
+                      <article className="topic-article" key={article.title}>
+                        <div className="topic-article-index">
+                          {moduleIndex + 1}-{index + 1}
+                        </div>
+                        <div className="topic-article-main">
+                          <div className="topic-article-head">
+                            <h4>
+                              {article.isPrimer ? "★ " : ""}
+                              {article.title}
+                            </h4>
+                            <span>
+                              {article.source} · {article.published} · {article.sourceType}
+                            </span>
+                          </div>
+                          <p>{article.summary}</p>
+                        </div>
+                        <div className="topic-article-notes">
+                          <div>
+                            <strong>为什么值得读</strong>
+                            <p>{article.whyItMatters}</p>
+                          </div>
+                          <div>
+                            <strong>边界或争议</strong>
+                            <p>{article.caveat}</p>
+                          </div>
+                          <a href={article.url} target="_blank" rel="noreferrer">
+                            打开原文
+                            <ArrowRight size={15} />
+                          </a>
+                        </div>
+                      </article>
+                    ))}
+                  </section>
                 ))}
-              </ul>
-
-              {module.articles.map((article, index) => (
-                <article className="topic-article" key={article.title}>
-                  <div className="topic-article-index">
-                    {moduleIndex + 1}-{index + 1}
-                  </div>
-                  <div className="topic-article-main">
-                    <div className="topic-article-head">
-                      <h4>
-                        {article.isPrimer ? "★ " : ""}
-                        {article.title}
-                      </h4>
-                      <span>
-                        {article.source} · {article.published} · {article.sourceType}
-                      </span>
-                    </div>
-                    <p>{article.summary}</p>
-                  </div>
-                  <div className="topic-article-notes">
-                    <div>
-                      <strong>为什么值得读</strong>
-                      <p>{article.whyItMatters}</p>
-                    </div>
-                    <div>
-                      <strong>边界或争议</strong>
-                      <p>{article.caveat}</p>
-                    </div>
-                    <a href={article.url} target="_blank" rel="noreferrer">
-                      打开原文
-                      <ArrowRight size={15} />
-                    </a>
-                  </div>
-                </article>
-              ))}
+              </div>
             </section>
-          ))}
-        </div>
-      </section>
 
-      <section className="section">
-        <div className="section-heading">
-          <p className="eyebrow">苏格拉底式追问</p>
-          <h2>如果你没有“看完就特别懂”的感觉，直接用助手继续把关系问穿</h2>
-        </div>
-        <AgentPanel topicId={topic.id} quickPrompts={topic.socraticStarts} />
-      </section>
+            <section className="topic-reading-section">
+              <div className="section-heading">
+                <p className="eyebrow">下一步</p>
+                <h2>读完主题页后，你可以回首页换题，或者继续追问这组材料</h2>
+              </div>
 
-      <section className="section">
-        <div className="section-heading">
-          <p className="eyebrow">下一步</p>
-          <h2>读完主题页后，你可以回首页换题，或者继续追问这组材料</h2>
-        </div>
+              <div className="topic-nav-grid">
+                <Link href="/" className="topic-nav-card">
+                  <span>返回主题目录</span>
+                  <strong>继续选别的主题</strong>
+                </Link>
 
-        <div className="topic-nav-grid">
-          <Link href="/" className="topic-nav-card">
-            <span>返回主题目录</span>
-            <strong>继续选别的主题</strong>
-          </Link>
+                <a href="#assistant" className="topic-nav-card topic-nav-card-accent">
+                  <span>继续追问</span>
+                  <strong>把模块、文章和争议边界串起来</strong>
+                </a>
+              </div>
+            </section>
+          </div>
 
-          <a href="#assistant" className="topic-nav-card topic-nav-card-accent">
-            <span>继续追问</span>
-            <strong>把模块、文章和争议边界串起来</strong>
-          </a>
+          <TopicAssistantDock topic={topic} />
         </div>
-      </section>
+      </div>
     </main>
   );
 }

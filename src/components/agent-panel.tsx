@@ -4,12 +4,16 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type { FormEvent } from "react";
 import { ArrowUpRight, BadgeInfo, Mic, MicOff, Sparkles, Volume2, VolumeX } from "lucide-react";
 
-import type { AgentMode } from "@/lib/agent";
+import type { AgentMode, SupportedModelId } from "@/lib/agent";
 import { resolveModel, supportedModels } from "@/lib/agent";
 
 type AgentPanelProps = {
   topicId?: string;
   quickPrompts?: string[];
+  variant?: "full" | "rail" | "sheet";
+  state?: AgentPanelState;
+  onStateChange?: (nextState: AgentPanelState) => void;
+  panelId?: string;
 };
 
 type AgentResponse = {
@@ -18,24 +22,61 @@ type AgentResponse = {
   detail?: string;
 };
 
+export type AgentPanelState = {
+  question: string;
+  model: SupportedModelId;
+  mode: AgentMode;
+  answer: string;
+  error: string;
+  voiceError: string;
+};
+
 const modeLabels: Array<{ id: AgentMode; label: string }> = [
   { id: "answer", label: "直接回答" },
   { id: "socratic", label: "苏格拉底" },
   { id: "quiz", label: "小测一轮" },
 ];
 
-export function AgentPanel({ topicId, quickPrompts = [] }: AgentPanelProps) {
-  const [question, setQuestion] = useState("");
-  const [model, setModel] = useState<(typeof supportedModels)[number]["id"]>(supportedModels[0].id);
-  const [mode, setMode] = useState<AgentMode>("socratic");
-  const [answer, setAnswer] = useState("");
-  const [error, setError] = useState("");
-  const [voiceError, setVoiceError] = useState("");
+const initialAgentPanelState: AgentPanelState = {
+  question: "",
+  model: supportedModels[0].id,
+  mode: "socratic",
+  answer: "",
+  error: "",
+  voiceError: "",
+};
+
+export function AgentPanel({
+  topicId,
+  quickPrompts = [],
+  variant = "full",
+  state,
+  onStateChange,
+  panelId = "assistant",
+}: AgentPanelProps) {
+  const [internalState, setInternalState] = useState<AgentPanelState>(initialAgentPanelState);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [isRecording, setIsRecording] = useState(false);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const activeState = state ?? internalState;
+
+  const setAgentState = (nextState: AgentPanelState | ((current: AgentPanelState) => AgentPanelState)) => {
+    const resolvedState = typeof nextState === "function" ? nextState(activeState) : nextState;
+    if (onStateChange) {
+      onStateChange(resolvedState);
+      return;
+    }
+
+    setInternalState(resolvedState);
+  };
+
+  const patchAgentState = (patch: Partial<AgentPanelState>) => {
+    setAgentState((current) => ({ ...current, ...patch }));
+  };
+
+  const { question, model, mode, answer, error, voiceError } = activeState;
 
   const modeHint = useMemo(() => {
     switch (mode) {
@@ -55,6 +96,16 @@ export function AgentPanel({ topicId, quickPrompts = [] }: AgentPanelProps) {
     mode === "socratic"
       ? "苏格拉底模式不会先替你回答，它会先把你的问题拆成你必须自己作答的小问题。"
       : "默认学习方式是：先建立判断，再拆机制，再补边界，然后继续追问。";
+  const panelTitle = variant === "full" ? "不是只回答，而是带着你继续学下去" : "AI 助教伴读";
+  const panelClassName =
+    variant === "rail"
+      ? "panel-shell panel-shell-rail"
+      : variant === "sheet"
+        ? "panel-shell panel-shell-sheet"
+        : "panel-shell";
+  const showMeta = variant === "full";
+  const showHeaderEyebrow = variant !== "sheet";
+  const trimmedPrompts = variant === "rail" ? quickPrompts.slice(0, 2) : quickPrompts;
 
   useEffect(() => {
     return () => {
@@ -69,8 +120,7 @@ export function AgentPanel({ topicId, quickPrompts = [] }: AgentPanelProps) {
     event.preventDefault();
 
     startTransition(async () => {
-      setError("");
-      setAnswer("");
+      patchAgentState({ error: "", answer: "" });
 
       const response = await fetch("/api/ask", {
         method: "POST",
@@ -88,11 +138,11 @@ export function AgentPanel({ topicId, quickPrompts = [] }: AgentPanelProps) {
       const payload = (await response.json()) as AgentResponse;
 
       if (!response.ok) {
-        setError(payload.detail ?? payload.error ?? "请求失败");
+        patchAgentState({ error: payload.detail ?? payload.error ?? "请求失败" });
         return;
       }
 
-      setAnswer(payload.answer ?? "");
+      patchAgentState({ answer: payload.answer ?? "" });
     });
   };
 
@@ -127,10 +177,13 @@ export function AgentPanel({ topicId, quickPrompts = [] }: AgentPanelProps) {
           try {
             const blob = new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" });
             const transcript = await uploadVoiceBlob(blob);
-            setQuestion((current) => [current.trim(), transcript.trim()].filter(Boolean).join("\n"));
-            setVoiceError("");
+            setAgentState((current) => ({
+              ...current,
+              question: [current.question.trim(), transcript.trim()].filter(Boolean).join("\n"),
+              voiceError: "",
+            }));
           } catch (voiceIssue) {
-            setVoiceError(voiceIssue instanceof Error ? voiceIssue.message : "语音识别失败");
+            patchAgentState({ voiceError: voiceIssue instanceof Error ? voiceIssue.message : "语音识别失败" });
           } finally {
             recorder.stream.getTracks().forEach((track) => track.stop());
             recorderRef.current = null;
@@ -153,7 +206,7 @@ export function AgentPanel({ topicId, quickPrompts = [] }: AgentPanelProps) {
     }
 
     if (typeof window === "undefined" || !navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
-      setVoiceError("当前浏览器不支持录音");
+      patchAgentState({ voiceError: "当前浏览器不支持录音" });
       return;
     }
 
@@ -168,16 +221,16 @@ export function AgentPanel({ topicId, quickPrompts = [] }: AgentPanelProps) {
         }
       });
       recorder.start();
-      setVoiceError("");
+      patchAgentState({ voiceError: "" });
       setIsRecording(true);
     } catch (recordingIssue) {
-      setVoiceError(recordingIssue instanceof Error ? recordingIssue.message : "无法打开麦克风");
+      patchAgentState({ voiceError: recordingIssue instanceof Error ? recordingIssue.message : "无法打开麦克风" });
     }
   };
 
   const toggleSpeech = () => {
     if (typeof window === "undefined" || !window.speechSynthesis) {
-      setVoiceError("当前浏览器不支持 TTS");
+      patchAgentState({ voiceError: "当前浏览器不支持 TTS" });
       return;
     }
 
@@ -202,25 +255,29 @@ export function AgentPanel({ topicId, quickPrompts = [] }: AgentPanelProps) {
   };
 
   return (
-    <section className="panel-shell" id="assistant">
+    <section className={panelClassName} id={panelId}>
       <div className="panel-header">
         <div>
-          <p className="eyebrow">站内 AI 助教</p>
-          <h3>不是只回答，而是带着你继续学下去</h3>
-          <div className="panel-meta">
-            <span>
-              <Sparkles size={15} />
-              优先使用站内结构
-            </span>
-            <span>
-              <BadgeInfo size={15} />
-              仅限知识库检索与受限联网补充
-            </span>
-          </div>
+          {showHeaderEyebrow ? <p className="eyebrow">站内 AI 助教</p> : null}
+          <h3>{panelTitle}</h3>
+          {showMeta ? (
+            <div className="panel-meta">
+              <span>
+                <Sparkles size={15} />
+                优先使用站内结构
+              </span>
+              <span>
+                <BadgeInfo size={15} />
+                仅限知识库检索与受限联网补充
+              </span>
+            </div>
+          ) : (
+            <p className="panel-note">读到哪里就问到哪里，不需要跳出当前主题。</p>
+          )}
         </div>
         <label className="model-picker">
           <span>模型</span>
-          <select value={model} onChange={(event) => setModel(resolveModel(event.target.value))}>
+          <select value={model} onChange={(event) => patchAgentState({ model: resolveModel(event.target.value) })}>
             {supportedModels.map((item) => (
               <option key={item.id} value={item.id}>
                 {item.label}
@@ -236,17 +293,22 @@ export function AgentPanel({ topicId, quickPrompts = [] }: AgentPanelProps) {
             key={item.id}
             type="button"
             className={item.id === mode ? "agent-mode-button is-active" : "agent-mode-button"}
-            onClick={() => setMode(item.id)}
+            onClick={() => patchAgentState({ mode: item.id })}
           >
             {item.label}
           </button>
         ))}
       </div>
 
-      {quickPrompts.length > 0 ? (
+      {trimmedPrompts.length > 0 ? (
         <div className="agent-prompt-strip">
-          {quickPrompts.map((prompt) => (
-            <button key={prompt} type="button" className="agent-prompt-chip" onClick={() => setQuestion(prompt)}>
+          {trimmedPrompts.map((prompt) => (
+            <button
+              key={prompt}
+              type="button"
+              className="agent-prompt-chip"
+              onClick={() => patchAgentState({ question: prompt })}
+            >
               {prompt}
             </button>
           ))}
@@ -256,9 +318,9 @@ export function AgentPanel({ topicId, quickPrompts = [] }: AgentPanelProps) {
       <form className="agent-form" onSubmit={handleSubmit}>
         <textarea
           value={question}
-          onChange={(event) => setQuestion(event.target.value)}
+          onChange={(event) => patchAgentState({ question: event.target.value })}
           placeholder="例如：AlphaZero、AlphaEvolve、Nested Learning 三者是什么关系？它们分别代表哪一层自进化能力？"
-          rows={5}
+          rows={variant === "rail" ? 4 : 5}
         />
         <div className="agent-actions">
           <p>{modeHint}</p>
@@ -271,7 +333,7 @@ export function AgentPanel({ topicId, quickPrompts = [] }: AgentPanelProps) {
               {isRecording ? <MicOff size={16} /> : <Mic size={16} />}
               {isRecording ? "停止语音" : "语音输入"}
             </button>
-              <button type="submit" disabled={isPending || !question.trim()}>
+            <button type="submit" disabled={isPending || !question.trim()}>
               {isPending ? "思考中..." : submitLabel}
               <ArrowUpRight size={16} />
             </button>
