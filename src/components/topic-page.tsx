@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { ArrowLeft, ArrowRight, BookOpenText, FileStack, Milestone, Tags } from "lucide-react";
 
+import { SiteHeader } from "@/components/site-header";
 import type { ReadingModule } from "@/content/reading-list";
 import { getAdjacentModules } from "@/lib/knowledge";
 
@@ -9,23 +11,48 @@ type TopicPageProps = {
 
 export function TopicPage({ module }: TopicPageProps) {
   const { previous, next } = getAdjacentModules(module.id);
+  const tags = Array.from(
+    new Set(module.articles.flatMap((article) => article.tags).slice(0, 10)),
+  ).slice(0, 8);
 
   return (
     <main className="topic-page">
+      <SiteHeader active="topics" />
+
       <section className="topic-hero">
         <div className="topic-shell">
           <div className="topic-topbar">
             <Link href="/" className="topic-back">
+              <ArrowLeft size={16} />
               返回首页
             </Link>
             <p className="eyebrow">topic / {module.id}</p>
           </div>
 
           <div className="topic-hero-grid">
-            <div>
+            <div className="topic-copy">
+              <div className="topic-kicker">
+                <span>章节</span>
+                <strong>{module.id}</strong>
+              </div>
               <h1>{module.title}</h1>
               <p className="topic-question">{module.guidingQuestion}</p>
               <p className="topic-synthesis">{module.synthesis}</p>
+
+              <div className="topic-meta-row">
+                <span>
+                  <Milestone size={16} />
+                  {module.articles.length} 个阅读节点
+                </span>
+                <span>
+                  <BookOpenText size={16} />
+                  按路径阅读
+                </span>
+                <span>
+                  <FileStack size={16} />
+                  先概念后机制再边界
+                </span>
+              </div>
             </div>
 
             <aside className="topic-sidebar">
@@ -35,6 +62,18 @@ export function TopicPage({ module }: TopicPageProps) {
                   <li key={takeaway}>{takeaway}</li>
                 ))}
               </ul>
+
+              <div className="topic-side-block">
+                <p className="eyebrow">关键词</p>
+                <div className="topic-tag-list">
+                  {tags.map((tag) => (
+                    <span key={tag}>
+                      <Tags size={13} />
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </aside>
           </div>
         </div>
@@ -73,6 +112,7 @@ export function TopicPage({ module }: TopicPageProps) {
                 </div>
                 <a href={article.url} target="_blank" rel="noreferrer">
                   打开原文
+                  <ArrowRight size={15} />
                 </a>
               </div>
             </article>

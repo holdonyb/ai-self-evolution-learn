@@ -1,7 +1,9 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
+import { ArrowRight, Bot, Compass, LibraryBig, Orbit, ScrollText, Waypoints } from "lucide-react";
 
 import { AgentPanel } from "@/components/agent-panel";
+import { SiteHeader } from "@/components/site-header";
 import { glossary, readingModules } from "@/content/reading-list";
 import { getKnowledgeStats } from "@/lib/knowledge";
 
@@ -37,13 +39,16 @@ export function LearningHome() {
 
   return (
     <main className="learn-page">
+      <SiteHeader active="home" />
+
       <section className="hero">
         <div className="hero-grid">
           <div className="hero-copy">
-            <p className="eyebrow">learn.ifix.xin / structured study</p>
+            <p className="eyebrow">learn.ifix.xin / editorial knowledge system</p>
             <h1>AI 自进化学习站</h1>
+            <p className="hero-kicker">让知识自我进化，让学习持续发生。</p>
             <p className="hero-summary">
-              把一组分散的文章压缩成一个能顺着读、能横向比、也能直接追问的学习工作台。
+              把一组分散的文章压缩成一个能顺着读、能横向比、也能直接追问的研究型学习站。
             </p>
             <div className="hero-stats">
               <div>
@@ -59,6 +64,31 @@ export function LearningHome() {
                 <p>入门首选</p>
               </div>
             </div>
+
+            <div className="hero-actions">
+              <Link href="#topics" className="hero-link-primary">
+                进入六大主题
+                <ArrowRight size={17} />
+              </Link>
+              <Link href="#assistant" className="hero-link-secondary">
+                直接问学习助手
+              </Link>
+            </div>
+
+            <div className="hero-rail">
+              <article>
+                <span>输入</span>
+                <p>阅读清单、论文、媒体、实验室线索</p>
+              </article>
+              <article>
+                <span>理解</span>
+                <p>概念边界、能力台阶、验证器逻辑</p>
+              </article>
+              <article>
+                <span>迭代</span>
+                <p>顺着 topic 路由，把零散材料变成长期知识</p>
+              </article>
+            </div>
           </div>
           <div className="hero-map" aria-hidden="true">
             <div className="orbit orbit-a" />
@@ -67,6 +97,28 @@ export function LearningHome() {
             <div className="map-core">
               <span>RSI</span>
               <p>从自我对弈到自改研究飞轮</p>
+            </div>
+            <div className="map-annotations">
+              <article>
+                <strong>输入</strong>
+                <span>信息摄入</span>
+              </article>
+              <article>
+                <strong>理解</strong>
+                <span>意义建构</span>
+              </article>
+              <article>
+                <strong>内化</strong>
+                <span>知识融通</span>
+              </article>
+              <article>
+                <strong>输出</strong>
+                <span>表达与应用</span>
+              </article>
+              <article>
+                <strong>迭代</strong>
+                <span>反馈与演化</span>
+              </article>
             </div>
             <ul>
               {readingModules.map((module, index) => (
@@ -79,10 +131,10 @@ export function LearningHome() {
         </div>
       </section>
 
-      <section className="section">
+      <section className="section" id="topics">
         <div className="section-heading">
-          <p className="eyebrow">主页导航</p>
-          <h2>从首页进入每个主题页，不把所有内容都堆在一屏里</h2>
+          <p className="eyebrow">六大主题</p>
+          <h2>首页负责导航和定位，真正的深读发生在每个 topic 页</h2>
         </div>
         <div className="topic-card-grid">
           {readingModules.map((module, index) => (
@@ -91,19 +143,30 @@ export function LearningHome() {
                 <span className="module-index">0{index + 1}</span>
                 <p>/{module.id}</p>
               </div>
+              <div className="topic-card-icon" aria-hidden="true">
+                {index === 0 ? <Compass size={22} /> : null}
+                {index === 1 ? <Orbit size={22} /> : null}
+                {index === 2 ? <Waypoints size={22} /> : null}
+                {index === 3 ? <LibraryBig size={22} /> : null}
+                {index === 4 ? <Bot size={22} /> : null}
+                {index === 5 ? <ScrollText size={22} /> : null}
+              </div>
               <h3>{module.title}</h3>
               <p className="module-question">{module.guidingQuestion}</p>
               <p className="module-synthesis">{module.synthesis}</p>
               <div className="topic-card-footer">
                 <span>{module.articles.length} 篇文章</span>
-                <strong>进入主题</strong>
+                <strong>
+                  进入主题
+                  <ArrowRight size={16} />
+                </strong>
               </div>
             </Link>
           ))}
         </div>
       </section>
 
-      <section className="section split-section">
+      <section className="section split-section" id="framework">
         <div>
           <div className="section-heading">
             <p className="eyebrow">一张表看明白</p>
@@ -164,6 +227,7 @@ export function LearningHome() {
         <div className="glossary-grid">
           {glossary.map((item) => (
             <article key={item.term}>
+              <span className="glossary-tag">TERM</span>
               <h3>{item.term}</h3>
               <p>{item.definition}</p>
             </article>
