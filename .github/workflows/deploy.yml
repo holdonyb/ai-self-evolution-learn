@@ -42,6 +42,11 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
 
+      - name: Prepare remote directories
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+            "mkdir -p /opt/learn-ifix/app /var/www/certbot"
+
       - name: Sync project files
         run: |
           rsync -az --delete \
@@ -56,7 +61,6 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'EOF'
           set -e
-          mkdir -p /opt/learn-ifix/app /var/www/certbot
 
           cp /opt/learn-ifix/app/deploy/nginx/learn.ifix.xin.http.conf /etc/nginx/sites-available/learn.ifix.xin
           ln -sfn /etc/nginx/sites-available/learn.ifix.xin /etc/nginx/sites-enabled/learn.ifix.xin
