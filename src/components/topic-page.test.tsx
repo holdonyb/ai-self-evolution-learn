@@ -20,5 +20,7 @@ describe("TopicPage", () => {
     expect(screen.getByRole("link", { name: "返回首页" })).toHaveAttribute("href", "/");
     expect(screen.getByRole("link", { name: /返回主题目录/ })).toHaveAttribute("href", "/");
     expect(screen.getByRole("heading", { name: /先看结构，再读细节/ })).toBeInTheDocument();
+    expect(screen.getByAltText("自我对弈与算法发现")).toBeInTheDocument();
+    expect(screen.getByAltText("持续学习与产业验证")).toBeInTheDocument();
   });
 });

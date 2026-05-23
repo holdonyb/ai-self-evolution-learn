@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Bot, BookOpenText, Compass, Network } from "lucide-react";
 
@@ -34,9 +35,30 @@ export function LearningHome() {
                 问 AI 助教
               </Link>
             </div>
+
+            <figure className="home-inline-figure">
+              <div className="home-inline-image">
+                <Image
+                  src="/design/hero-research-atlas.png"
+                  alt="AI 自进化路径示意"
+                  className="media-fill"
+                  fill
+                  unoptimized
+                />
+              </div>
+            </figure>
           </div>
 
           <Link className="home-featured-topic" href={`/topic/${featuredTopic.id}`}>
+            <div className="home-featured-topic-media">
+              <Image
+                src="/design/continual-learning-industry.png"
+                alt="AI 自进化研究图景"
+                className="media-fill"
+                fill
+                unoptimized
+              />
+            </div>
             <div className="topic-card-head">
               <span className="module-index">01</span>
               <p>{featuredTopic.deck}</p>
@@ -93,6 +115,21 @@ export function LearningHome() {
         <div className="section-heading">
           <p className="eyebrow">学习方式</p>
           <h2>一条路径读下来</h2>
+        </div>
+        <div className="home-visual-break">
+          <div className="home-visual-break-copy">
+            <p className="eyebrow">研究图景</p>
+            <p>这不是一组散文式文章，而是一条从封闭验证走向开放研究的能力路线。</p>
+          </div>
+          <div className="home-visual-break-image">
+            <Image
+              src="/design/path-algorithm-discovery.png"
+              alt=""
+              className="media-fill"
+              fill
+              unoptimized
+            />
+          </div>
         </div>
         <div className="home-flow-grid">
           <article>

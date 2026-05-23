@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, BookOpenText, FileStack, Milestone, Tags } from "lucide-react";
 
@@ -56,6 +57,17 @@ export function TopicPage({ topic }: TopicPageProps) {
             </div>
 
             <aside className="topic-sidebar">
+              <figure className="topic-sidebar-figure">
+                <div className="topic-sidebar-image">
+                  <Image
+                    src="/design/path-algorithm-discovery.png"
+                    alt="自我对弈与算法发现"
+                    className="media-fill"
+                    fill
+                    unoptimized
+                  />
+                </div>
+              </figure>
               <p className="eyebrow">本页先想清什么</p>
               <ul className="topic-takeaways">
                 {topic.socraticStarts.map((prompt) => (
@@ -101,6 +113,22 @@ export function TopicPage({ topic }: TopicPageProps) {
           <p className="eyebrow">学习路径</p>
           <h2>今天这组主题学的不是某一篇文章，而是一整条能力演化路径</h2>
         </div>
+
+        <figure className="topic-lead-figure">
+          <div className="topic-lead-figure-copy">
+            <p className="eyebrow">持续学习与部署</p>
+            <p>真正困难的地方，不是生成候选，而是让系统在长期记忆、评测和生产反馈里稳定变强。</p>
+          </div>
+          <div className="topic-lead-figure-image">
+            <Image
+              src="/design/hero-research-atlas.png"
+              alt="持续学习与产业验证"
+              className="media-fill"
+              fill
+              unoptimized
+            />
+          </div>
+        </figure>
 
         <div className="topic-article-list">
           {topic.modules.map((module, moduleIndex) => (
