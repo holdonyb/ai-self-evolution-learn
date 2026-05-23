@@ -723,6 +723,156 @@ a {
   gap: 1rem;
 }
 
+.research-atlas {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.34fr) minmax(0, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.research-atlas-copy,
+.research-atlas-figure {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.research-atlas-copy {
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+  padding: 1.35rem;
+}
+
+.research-atlas-copy p {
+  margin: 0;
+  color: var(--ink-soft);
+  line-height: 1.8;
+}
+
+.research-atlas-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.research-atlas-legend span {
+  padding: 0.42rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--accent-strong);
+  font-size: 0.85rem;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.research-atlas-figure {
+  position: relative;
+  overflow: hidden;
+  margin: 0;
+  aspect-ratio: 16 / 10;
+}
+
+.research-atlas-image {
+  position: absolute;
+  inset: 0;
+}
+
+.research-atlas-image::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(247, 241, 227, 0.18), rgba(18, 26, 33, 0.08) 32%, rgba(18, 26, 33, 0.18)),
+    linear-gradient(90deg, rgba(247, 241, 227, 0.12), rgba(247, 241, 227, 0));
+}
+
+.research-atlas-overlay {
+  position: absolute;
+  inset: 0;
+  padding: clamp(1rem, 2vw, 1.5rem);
+}
+
+.research-atlas-core,
+.research-atlas-node {
+  position: absolute;
+  display: grid;
+  gap: 0.2rem;
+  max-width: min(24ch, 26%);
+  padding: 0.78rem 0.86rem;
+  border: 1px solid rgba(18, 26, 33, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 251, 244, 0.86);
+  box-shadow: 0 10px 28px rgba(18, 26, 33, 0.08);
+  backdrop-filter: blur(4px);
+}
+
+.research-atlas-core {
+  top: 50%;
+  left: 50%;
+  z-index: 2;
+  max-width: 26ch;
+  text-align: center;
+  transform: translate(-50%, -50%);
+  background: rgba(15, 68, 72, 0.92);
+  border-color: rgba(247, 241, 227, 0.16);
+}
+
+.research-atlas-core strong {
+  color: #f7f1e3;
+  font-family: var(--font-serif), serif;
+  font-size: clamp(1.2rem, 2vw, 1.65rem);
+  line-height: 1.08;
+}
+
+.research-atlas-core span {
+  color: rgba(247, 241, 227, 0.84);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.research-atlas-node strong {
+  color: var(--surface-ink);
+  font-family: var(--font-serif), serif;
+  font-size: 1.02rem;
+  line-height: 1.15;
+}
+
+.research-atlas-node span {
+  color: var(--ink-soft);
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+.node-origin {
+  top: 8%;
+  left: 5%;
+}
+
+.node-play {
+  top: 8%;
+  right: 5%;
+}
+
+.node-discovery {
+  top: 33%;
+  right: 2.5%;
+}
+
+.node-learning {
+  right: 10%;
+  bottom: 10%;
+}
+
+.node-industry {
+  bottom: 10%;
+  left: 10%;
+}
+
+.node-doubt {
+  top: 33%;
+  left: 2.5%;
+}
+
 .home-visual-break {
   display: grid;
   grid-template-columns: minmax(220px, 0.36fr) minmax(0, 1fr);
@@ -1449,6 +1599,7 @@ a {
 
   .hero-grid,
   .home-gateway,
+  .research-atlas,
   .home-visual-break,
   .split-section,
   .topic-map-grid,
@@ -1465,6 +1616,15 @@ a {
   .topic-card-grid,
   .topic-nav-grid {
     grid-template-columns: 1fr;
+  }
+
+  .research-atlas-figure {
+    aspect-ratio: 5 / 6;
+  }
+
+  .research-atlas-core,
+  .research-atlas-node {
+    max-width: min(28ch, calc(50% - 1rem));
   }
 }
 
@@ -1511,6 +1671,33 @@ a {
 
   .home-visual-break-image {
     min-height: 220px;
+  }
+
+  .research-atlas-figure {
+    aspect-ratio: auto;
+    padding: 1rem;
+  }
+
+  .research-atlas-image {
+    position: relative;
+    aspect-ratio: 5 / 4;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .research-atlas-overlay {
+    position: static;
+    display: grid;
+    gap: 0.75rem;
+    padding: 1rem 0 0;
+  }
+
+  .research-atlas-core,
+  .research-atlas-node {
+    position: static;
+    max-width: none;
+    transform: none;
+    backdrop-filter: none;
   }
 
   .hero h1 {

@@ -114,12 +114,67 @@ export function LearningHome() {
       <section className="section home-flow-section">
         <div className="section-heading">
           <p className="eyebrow">学习方式</p>
-          <h2>一条路径读下来</h2>
+          <h2>一张图看完整个调研</h2>
+        </div>
+        <div className="research-atlas">
+          <div className="research-atlas-copy">
+            <p className="eyebrow">总图</p>
+            <p>
+              整个调研不是在堆论文，而是在回答同一个问题：什么样的系统，才算开始具备“让 AI 改进 AI”
+              的能力。
+            </p>
+            <div className="research-atlas-legend" aria-label="研究判断维度">
+              <span>闭环</span>
+              <span>验证器</span>
+              <span>时间尺度</span>
+            </div>
+          </div>
+          <figure className="research-atlas-figure">
+            <div className="research-atlas-image">
+              <Image
+                src="/design/research-master-map.png"
+                alt="AI 自进化总图"
+                className="media-fill"
+                fill
+                unoptimized
+              />
+            </div>
+            <div className="research-atlas-overlay" aria-hidden="true">
+              <div className="research-atlas-core">
+                <strong>AI 自进化</strong>
+                <span>从局部优化走向系统级改进</span>
+              </div>
+              <div className="research-atlas-node node-origin">
+                <strong>概念起源</strong>
+                <span>先定义什么叫自我改进</span>
+              </div>
+              <div className="research-atlas-node node-play">
+                <strong>自我对弈</strong>
+                <span>在封闭规则里先证明能自己变强</span>
+              </div>
+              <div className="research-atlas-node node-discovery">
+                <strong>算法发现</strong>
+                <span>不只调参数，开始搜索方法本身</span>
+              </div>
+              <div className="research-atlas-node node-learning">
+                <strong>持续学习</strong>
+                <span>把训练后系统重新接回现实反馈</span>
+              </div>
+              <div className="research-atlas-node node-industry">
+                <strong>产业押注</strong>
+                <span>谁在把这件事做成产品和基础设施</span>
+              </div>
+              <div className="research-atlas-node node-doubt">
+                <strong>反方质疑</strong>
+                <span>哪些环节决定它不会自动通向爆炸</span>
+              </div>
+            </div>
+          </figure>
         </div>
         <div className="home-visual-break">
           <div className="home-visual-break-copy">
-            <p className="eyebrow">研究图景</p>
-            <p>这不是一组散文式文章，而是一条从封闭验证走向开放研究的能力路线。</p>
+            <p className="eyebrow">阅读顺序</p>
+            <p>先看总图，再沿着六个模块展开，每一步都回到验证方式和能力边界。</p>
           </div>
           <div className="home-visual-break-image">
             <Image
