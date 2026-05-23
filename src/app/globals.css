@@ -969,6 +969,67 @@ a {
   opacity: 0.72;
 }
 
+.design-preview-shell {
+  display: grid;
+  gap: 1.4rem;
+}
+
+.design-principles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.design-principles article,
+.design-shot {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.design-principles article {
+  padding: 1rem;
+}
+
+.design-principles span {
+  display: block;
+  margin-bottom: 0.6rem;
+  color: var(--brass);
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.2rem;
+}
+
+.design-principles p {
+  margin: 0;
+  line-height: 1.72;
+  color: var(--ink-soft);
+}
+
+.design-preview-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.design-shot {
+  overflow: hidden;
+}
+
+.design-shot-head {
+  padding: 1rem 1rem 0;
+}
+
+.design-shot-head h3 {
+  margin: 0;
+  font-family: var(--font-serif), serif;
+  font-size: 1.6rem;
+}
+
+.design-shot-image {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
 @media (max-width: 1180px) {
   .site-header {
     grid-template-columns: 1fr;
@@ -985,7 +1046,8 @@ a {
   .topic-hero-grid,
   .topic-article,
   .thesis-list,
-  .glossary-grid {
+  .glossary-grid,
+  .design-principles {
     grid-template-columns: 1fr;
   }
 
