@@ -91,20 +91,38 @@ export function TopicPage({ topic }: TopicPageProps) {
         </div>
       </section>
 
-      <section className="section">
-        <div className="section-heading">
+      <section className="section topic-map-section" id="map">
+        <div className="section-heading topic-map-heading">
           <p className="eyebrow">主题图谱</p>
-          <h2>先看结构，再读细节。这个主题应该被理解成一张路径图，而不是一个长页面。</h2>
+          <h2>六步读懂 AI 自进化</h2>
+          <p className="section-lede">先建立阅读路线，再进入每一节的证据、边界和追问。</p>
         </div>
 
-        <div className="topic-map-grid">
-          {topic.modules.map((module, index) => (
-            <a key={module.id} href={`#module-${module.id}`} className="topic-map-card">
-              <span>0{index + 1}</span>
-              <strong>{module.title}</strong>
-              <p>{module.guidingQuestion}</p>
-            </a>
-          ))}
+        <div className="topic-path-layout">
+          <aside className="topic-path-summary">
+            <span>01-06</span>
+            <strong>从封闭规则走到开放系统</strong>
+            <p>这条线不是按文章发布时间排，而是按理解门槛排：先看什么算闭环，再看闭环如何变强，最后看它在哪里会失真。</p>
+            <div className="topic-path-checks" aria-label="阅读判断轴">
+              <span>规则是否封闭</span>
+              <span>反馈能否自动验证</span>
+              <span>能力是否能长期保留</span>
+            </div>
+          </aside>
+
+          <nav className="topic-path-board" aria-label="AI 自进化主题路径">
+            {topic.modules.map((module, index) => (
+              <a key={module.id} href={`#module-${module.id}`} className="topic-path-step">
+                <span className="topic-path-index">0{index + 1}</span>
+                <strong>{module.title}</strong>
+                <p>{module.guidingQuestion}</p>
+                <span className="topic-path-action">
+                  读这一节
+                  <ArrowRight size={14} />
+                </span>
+              </a>
+            ))}
+          </nav>
         </div>
       </section>
 

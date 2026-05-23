@@ -19,7 +19,10 @@ describe("TopicPage", () => {
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "返回首页" })).toHaveAttribute("href", "/");
     expect(screen.getByRole("link", { name: /返回主题目录/ })).toHaveAttribute("href", "/");
-    expect(screen.getByRole("heading", { name: /先看结构，再读细节/ })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "六步读懂 AI 自进化" })).toBeInTheDocument();
+    expect(screen.getByLabelText("AI 自进化主题路径")).toBeInTheDocument();
+    expect(screen.getByText("从封闭规则走到开放系统")).toBeInTheDocument();
+    expect(screen.getAllByText("读这一节")).toHaveLength(topic.modules.length);
     expect(screen.getByAltText("自我对弈与算法发现")).toBeInTheDocument();
     expect(screen.getByAltText("持续学习与产业验证")).toBeInTheDocument();
   });
