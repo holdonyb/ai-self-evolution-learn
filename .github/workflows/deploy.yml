@@ -1,0 +1,78 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.18.1
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test
+        run: npm test
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+      - name: Sync project files
+        run: |
+          rsync -az --delete \
+            --exclude ".git" \
+            --exclude ".github" \
+            --exclude "node_modules" \
+            --exclude ".next" \
+            ./ ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/opt/learn-ifix/app/
+
+      - name: Configure server and deploy
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'EOF'
+          set -e
+          mkdir -p /opt/learn-ifix/app /var/www/certbot
+
+          cp /opt/learn-ifix/app/deploy/nginx/learn.ifix.xin.http.conf /etc/nginx/sites-available/learn.ifix.xin
+          ln -sfn /etc/nginx/sites-available/learn.ifix.xin /etc/nginx/sites-enabled/learn.ifix.xin
+          nginx -t
+          systemctl reload nginx
+
+          if [ ! -d /etc/letsencrypt/live/learn.ifix.xin ]; then
+            certbot certonly --webroot -w /var/www/certbot -d learn.ifix.xin --non-interactive --agree-tos -m ${{ secrets.CERTBOT_EMAIL }}
+          fi
+
+          cp /opt/learn-ifix/app/deploy/nginx/learn.ifix.xin.conf /etc/nginx/sites-available/learn.ifix.xin
+
+          cat > /opt/learn-ifix/app/.env.production <<ENVEOF
+          ONEAPI_API_KEY=${{ secrets.ONEAPI_API_KEY }}
+          ONEAPI_BASE_URL=${{ secrets.ONEAPI_BASE_URL }}
+          NEXT_PUBLIC_SITE_URL=${{ secrets.NEXT_PUBLIC_SITE_URL }}
+          ENVEOF
+
+          cd /opt/learn-ifix/app
+          npm ci
+          npm run build
+          pm2 startOrReload deploy/ecosystem.config.cjs --update-env
+          nginx -t
+          systemctl reload nginx
+          EOF

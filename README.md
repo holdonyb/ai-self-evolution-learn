@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI 自进化学习站
 
-## Getting Started
+把 `AI自进化_对外阅读清单.md` 里的文章整理成一个结构化学习网站，并挂到 `learn.ifix.xin`。
 
-First, run the development server:
+## 这个项目做什么
+
+- 用六个模块把“AI 如何改进自己”讲清楚
+- 为每篇文章提炼核心价值、边界和继续追问方向
+- 提供站内 AI 助教，把本地知识库压成可问答的学习入口
+- 以独立仓库、独立部署链路运行，不耦合其他 `ifix.xin` 项目
+
+## 当前信息架构
+
+1. 概念与思想起源
+2. 自我对弈：AI 第一次自己变强
+3. AI 自己发现算法
+4. 让模型边用边学
+5. 产业前沿：谁在押注自进化
+6. 另一种声音：冷静与质疑
+
+## 技术栈
+
+- Next.js 16 App Router
+- React 19
+- Tailwind CSS 4
+- Vitest + Testing Library
+- OneAPI-compatible chat endpoint for the study assistant
+- nginx + pm2 deployment on the `openai-api` VM
+
+## 本地运行
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 环境变量
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Copy `.env.example` into `.env.local` or `.env.production`:
 
-## Learn More
+```env
+ONEAPI_API_KEY=replace-me
+ONEAPI_BASE_URL=https://oneapi.keath.ai
+NEXT_PUBLIC_SITE_URL=https://learn.ifix.xin
+```
 
-To learn more about Next.js, take a look at the following resources:
+## 验证
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm test
+npm run lint
+npm run build
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 部署
 
-## Deploy on Vercel
+- GitHub Actions workflow: `.github/workflows/deploy.yml`
+- nginx config: `deploy/nginx/learn.ifix.xin.conf`
+- pm2 config: `deploy/ecosystem.config.cjs`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The workflow pushes source to `/opt/learn-ifix/app`, builds on the server, reloads pm2, validates nginx, and reloads nginx.
