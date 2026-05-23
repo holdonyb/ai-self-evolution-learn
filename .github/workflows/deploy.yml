@@ -82,6 +82,9 @@ jobs:
           cd /opt/learn-ifix/app
           npm ci
           npm run build
+          mkdir -p .next/standalone/.next .next/standalone/public
+          cp -R .next/static .next/standalone/.next/
+          cp -R public/. .next/standalone/public/
           pm2 delete learn-ifix-web || true
           pm2 start deploy/ecosystem.config.cjs --update-env
           nginx -t
