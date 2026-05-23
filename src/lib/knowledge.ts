@@ -6,9 +6,11 @@ type SearchHit = {
   moduleTitle: string;
   moduleSynthesis: string;
   articleTitle: string;
+  sourceType: string;
   articleUrl: string;
   articleSummary: string;
   whyItMatters: string;
+  caveat: string;
   score: number;
 };
 
@@ -94,9 +96,11 @@ export function searchKnowledge(query: string, limit = 6): SearchHit[] {
           moduleTitle: module.title,
           moduleSynthesis: module.synthesis,
           articleTitle: article.title,
+          sourceType: article.sourceType,
           articleUrl: article.url,
           articleSummary: article.summary,
           whyItMatters: article.whyItMatters,
+          caveat: article.caveat,
           score,
         };
       }),
@@ -131,7 +135,7 @@ export function buildAgentContext(query: string) {
     const articles = group.entries
       .map(
         (entry) =>
-          `- ${entry.articleTitle}\n  核心：${entry.articleSummary}\n  价值：${entry.whyItMatters}\n  链接：${entry.articleUrl}`,
+          `- ${entry.articleTitle}\n  来源类型：${entry.sourceType}\n  核心：${entry.articleSummary}\n  价值：${entry.whyItMatters}\n  边界：${entry.caveat}\n  链接：${entry.articleUrl}`,
       )
       .join("\n");
 

@@ -14,20 +14,20 @@ It turns a scattered article pack into:
 ## Current State
 
 - Next.js 16 App Router project created under `E:\Work\ai-self-evolution-learn`
-- Reading list distilled into `src/content/reading-list.ts`
+- Reading list upgraded into a source-tiered knowledge base in `src/content/reading-list.ts`
 - Search and agent context builder implemented in `src/lib/knowledge.ts`
 - OneAPI-backed site assistant route implemented in `src/app/api/ask/route.ts`
 - Learning homepage implemented with structured modules, comparison table, glossary, and AI panel
 - Vitest coverage in place for knowledge search, agent payload assembly, and homepage rendering
 - Standalone deployment target selected for nginx + pm2 on the `openai-api` VM
 - Production-verified assistant model path currently uses `gemini-3.1-pro-preview`
+- Research write-up for the content refresh stored at `E:\Work\contexts\survey_sessions\ai_self_evolution_survey_20260523.md`
 
 ## Active Work
 
-1. finish deployment files and GitHub Actions
-2. push repo to GitHub and configure Actions secrets
-3. deploy to `learn.ifix.xin`
-4. verify live site and iterate on any runtime issues
+1. continue improving article-level rigor and source coverage
+2. consider exposing source-type filters or badges in the UI
+3. verify updated content on mobile and desktop after deployment
 
 ## How to Run
 

@@ -96,7 +96,7 @@ export function TopicPage({ module }: TopicPageProps) {
                     {article.title}
                   </h3>
                   <span>
-                    {article.source} · {article.published}
+                    {article.source} · {article.published} · {article.sourceType}
                   </span>
                 </div>
                 <p>{article.summary}</p>
