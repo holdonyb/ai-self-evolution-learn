@@ -6,6 +6,7 @@ import { ArrowUpRight, BadgeInfo, Mic, MicOff, Sparkles, Volume2, VolumeX } from
 
 import type { AgentMode, SupportedModelId } from "@/lib/agent";
 import { resolveModel, supportedModels } from "@/lib/agent";
+import { extractStreamingTranscript, mergeStreamingTranscript } from "@/lib/streaming-transcript";
 import { startStreamingVoice, type StreamingVoiceController, type VoiceStreamAuthPayload } from "@/lib/voice-streaming";
 
 type AgentPanelProps = {
@@ -129,15 +130,18 @@ export function AgentPanel({
 
   const applyStreamingQuestionPartial = (text: string) => {
     const normalized = text.trim();
-    const previous = streamingLastTextRef.current;
+    const previousPacket = streamingLastTextRef.current;
+    const previousApplied = streamingAppliedTextRef.current;
+    const merged = mergeStreamingTranscript(previousApplied, previousPacket, normalized);
     streamingLastTextRef.current = normalized;
+    streamingAppliedTextRef.current = merged;
 
     if (streamingManualEditRef.current) {
-      if (!normalized) {
+      if (!merged) {
         return;
       }
 
-      const suffix = normalized.startsWith(previous) ? normalized.slice(previous.length) : normalized;
+      const suffix = merged.startsWith(previousApplied) ? merged.slice(previousApplied.length) : normalized;
       if (!suffix) {
         return;
       }
@@ -149,11 +153,10 @@ export function AgentPanel({
       return;
     }
 
-    streamingAppliedTextRef.current = normalized;
     setAgentState((current) => ({
       ...current,
-      question: normalized
-        ? `${streamingBaseQuestionRef.current}${normalized}`
+      question: merged
+        ? `${streamingBaseQuestionRef.current}${merged}`
         : streamingBaseQuestionRef.current,
     }));
   };
@@ -234,8 +237,8 @@ export function AgentPanel({
           setIsRecording(true);
           patchAgentState({ voiceError: "" });
         },
-        onPartialText: (text) => {
-          const normalized = String(text || "").trim();
+        onPartialText: (text, fullData) => {
+          const normalized = extractStreamingTranscript(String(text || ""), fullData);
           if (normalized) {
             applyStreamingQuestionPartial(normalized);
           }
