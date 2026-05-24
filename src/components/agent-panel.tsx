@@ -119,6 +119,7 @@ export function AgentPanel({
         : "panel-shell";
   const showMeta = variant === "full";
   const showHeaderEyebrow = variant !== "sheet";
+  const showPanelHeading = variant !== "sheet";
   const trimmedPrompts = variant === "rail" ? quickPrompts.slice(0, 2) : quickPrompts;
 
   useEffect(() => {
@@ -308,24 +309,30 @@ export function AgentPanel({
   return (
     <section className={panelClassName} id={panelId}>
       <div className="panel-header">
-        <div>
-          {showHeaderEyebrow ? <p className="eyebrow">站内 AI 助教</p> : null}
-          <h3>{panelTitle}</h3>
-          {showMeta ? (
-            <div className="panel-meta">
-              <span>
-                <Sparkles size={15} />
-                优先使用站内结构
-              </span>
-              <span>
-                <BadgeInfo size={15} />
-                仅限知识库检索与受限联网补充
-              </span>
-            </div>
-          ) : (
-            <p className="panel-note">读到哪里就问到哪里，不需要跳出当前主题。</p>
-          )}
-        </div>
+        {showPanelHeading ? (
+          <div>
+            {showHeaderEyebrow ? <p className="eyebrow">站内 AI 助教</p> : null}
+            <h3>{panelTitle}</h3>
+            {showMeta ? (
+              <div className="panel-meta">
+                <span>
+                  <Sparkles size={15} />
+                  优先使用站内结构
+                </span>
+                <span>
+                  <BadgeInfo size={15} />
+                  仅限知识库检索与受限联网补充
+                </span>
+              </div>
+            ) : (
+              <p className="panel-note">读到哪里就问到哪里，不需要跳出当前主题。</p>
+            )}
+          </div>
+        ) : (
+          <div className="panel-sheet-intro">
+            <p>继续围绕当前主题追问，不需要跳出阅读路径。</p>
+          </div>
+        )}
         <label className="model-picker">
           <span>模型</span>
           <select value={model} onChange={(event) => patchAgentState({ model: resolveModel(event.target.value) })}>

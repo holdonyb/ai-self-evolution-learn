@@ -68,6 +68,7 @@ export function TopicAssistantDock({ topic }: TopicAssistantDockProps) {
             onClick={() => setIsMobileOpen(false)}
           />
           <div className="topic-assistant-mobile-sheet">
+            <div className="topic-assistant-mobile-handle" aria-hidden="true" />
             <div className="topic-assistant-mobile-sheet-head">
               <div>
                 <p className="eyebrow">移动伴读</p>
