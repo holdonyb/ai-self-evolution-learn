@@ -66,15 +66,24 @@ export function AgentPanel({
   const streamingLastTextRef = useRef("");
   const streamingManualEditRef = useRef(false);
   const activeState = state ?? internalState;
+  const activeStateRef = useRef(activeState);
+
+  useEffect(() => {
+    activeStateRef.current = activeState;
+  }, [activeState]);
 
   const setAgentState = (nextState: AgentPanelState | ((current: AgentPanelState) => AgentPanelState)) => {
-    const resolvedState = typeof nextState === "function" ? nextState(activeState) : nextState;
+    const resolvedState = typeof nextState === "function" ? nextState(activeStateRef.current) : nextState;
     if (onStateChange) {
+      activeStateRef.current = resolvedState;
       onStateChange(resolvedState);
       return;
     }
 
-    setInternalState(resolvedState);
+    setInternalState(() => {
+      activeStateRef.current = resolvedState;
+      return resolvedState;
+    });
   };
 
   const patchAgentState = (patch: Partial<AgentPanelState>) => {
